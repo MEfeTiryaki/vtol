@@ -1,0 +1,47 @@
+joint_state_controller:
+  type: joint_state_controller/JointStateController
+  publish_rate: 100
+
+# Command controllers
+TR:
+  type: position_controllers/JointPositionController
+  joint: vtol_0001_rotor_front_right
+TL:
+  type: position_controllers/JointPositionController
+  joint: vtol_0001_rotor_front_left
+ER:
+  type: position_controllers/JointPositionController
+  joint: vtol_0001_elevator_right
+EL:
+  type: position_controllers/JointPositionController
+  joint: vtol_0001_elevator_left
+AR:
+  type: position_controllers/JointPositionController
+  joint: vtol_0001_aileron_right
+AL:
+  type: position_controllers/JointPositionController
+  joint: vtol_0001_aileron_left
+#RR:
+#  type: effort_controllers/JointVelocityController
+#  joint: vtol_0001_blade_front_right
+#  pid:
+#    p: 1000.0
+#    i: 0.0
+#    d: 0.0
+#    i_clamp: 0.0
+#RL:
+#  type: effort_controllers/JointVelocityController
+#  joint: vtol_0001_blade_front_left
+#  pid:
+#    p: 1000.0
+#    i: 0.0
+#    d: 0.0
+#    i_clamp: 0.0
+#RH:
+#  type: effort_controllers/JointVelocityController
+#  joint: vtol_0001_blade_hind
+#  pid:
+#    p: 1000.0
+#    i: 0.0
+#    d: 0.0
+#    i_clamp: 0.0

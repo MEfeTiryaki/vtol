@@ -1,0 +1,71 @@
+<?xml version="1.0"?>
+
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <!-- Base -->
+  <xacro:macro name="vtol_base"  params="name robot_name **properties">
+
+    <!-- Xacro:Properties-->
+    <xacro:insert_block name="properties"/>
+
+    <!-- Attach the robot to the world link if requested -->
+    <xacro:if value="$(arg fixed)">
+      <gazebo>
+        <joint name="${robot_name}_world_joint" type="fixed">
+          <parent>${robot_name}_${name}</parent>
+          <child>world</child>
+        </joint>
+      </gazebo>
+    </xacro:if>
+
+    <!-- Base link -->
+    <!-- TODO : rotate the mesh in yaw using blender, dont to it here-->
+    <link name="${robot_name}_${name}">
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 ${PI}"/>
+        <geometry>
+          <!--box size="${L} ${W} ${H}" /-->
+          <mesh filename="file://$(find vtol_description)/urdf/base/0_0_0/Base.stl"/>
+        </geometry>
+        <material name="vtol_material" />
+      </visual>
+      <collision> <!-- Main Body -->
+        <origin xyz="-0.2 0 0" rpy="0 0 0"/>
+        <geometry>
+          <box size="${L} ${W} ${H}" />
+        </geometry>
+      </collision>
+    </link>
+
+    <!-- Fixed joint to add dummy inertia link -->
+    <joint name="${robot_name}_${name}_to_${name}_inertia" type="fixed">
+      <parent link="${robot_name}_${name}"/>
+      <child link="${robot_name}_${name}_inertia"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+    </joint>
+
+    <!-- Dummy inertia link, because KDL cannot have inertia on the base link -->
+    <link name="${robot_name}_${name}_inertia">
+      <inertial>
+        <origin   xyz="0 0 0"
+                  rpy="0 0 0"/>
+        <mass     value="${m_B}"/>
+        <inertia  ixx="${B_Ixx_B}" ixy="${B_Ixy_B}" ixz="${B_Ixz_B}"
+                  iyy="${B_Iyy_B}" iyz="${B_Iyz_B}" izz="${B_Izz_B}"/>
+      </inertial>
+    </link>
+
+    <gazebo>
+      <plugin name="gazebo_ros_control"
+        filename="libvtol_base_gazebo.so">
+        <robot_name>${robot_name}</robot_name>
+        <link_name>${robot_name}_${name}</link_name>
+        <debug>true</debug>
+      </plugin>
+    </gazebo>
+
+  </xacro:macro>
+
+
+
+</robot>

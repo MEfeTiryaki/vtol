@@ -1,0 +1,59 @@
+<?xml version="1.0"?>
+
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <!-- Base -->
+  <xacro:macro name="elevator"  params="robot_name base_name side **properties">
+
+    <!-- Xacro:Properties-->
+    <xacro:insert_block name="properties"/>
+    <xacro:property name="left"  value="${int(side.startswith('l'))*2-1}"/>
+
+    <!-- Rotor link -->
+    <link name="${robot_name}_elevator_${side}">
+      <visual>
+        <origin xyz="0 ${left *w_elevator/2} 0" rpy="0 0 0"/>
+        <geometry>
+          <box size="${l_elevator} ${w_elevator} ${h_elevator}"/>
+        </geometry>
+      </visual>
+      <collision> <!-- Main Body -->
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <box size="${l_elevator} ${w_elevator} ${h_elevator}"/>
+        </geometry>
+      </collision>
+      <inertial>
+        <origin   xyz="0 0 0"
+                  rpy="0 0 0"/>
+        <mass     value="${m_elevator}"/>
+        <inertia  ixx="${Ixx_elevator}" ixy="${Ixy_elevator}" ixz="${Ixz_elevator}"
+                  iyy="${Iyy_elevator}" iyz="${Iyz_elevator}" izz="${Izz_elevator}"/>
+      </inertial>
+    </link>
+
+    <joint name="${robot_name}_elevator_${side}" type="revolute">
+      <parent link="${base_name}"/>
+      <child link="${robot_name}_elevator_${side}"/>
+      <origin xyz="${x_elevator} ${left * y_elevator} ${z_elevator}" rpy="0 0 ${left * yaw_elevator}"/>
+      <axis xyz="1 0 0" />
+      <limit effort="30" velocity="1.0" lower="-${PI/6}" upper="${PI/6}" />
+    </joint>
+
+    <transmission name="${robot_name}_rotor_transmission_front_${side}">
+      <type>transmission_interface/SimpleTransmission</type>
+      <joint name="${robot_name}_elevator_${side}">
+        <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+      </joint>
+      <actuator name="${robot_name}_rotor_${side}_front_actuator">
+        <mechanicalReduction>1</mechanicalReduction>
+        <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+      </actuator>
+    </transmission>
+
+
+  </xacro:macro>
+
+
+
+</robot>

@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+
+<package format="2">
+  <name>vtol_description</name>
+  <version>0.0.1</version>
+  <description> This package contain urdf files of vtol uavs and their launch files </description>
+  <license>Proprietary</license>
+
+  <maintainer email="m.efetiryaki@gmail.com">Mehmet Efe Tiryaki</maintainer>
+
+  <buildtool_depend>catkin</buildtool_depend>
+</package>

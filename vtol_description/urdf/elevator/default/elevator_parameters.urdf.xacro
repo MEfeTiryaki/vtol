@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <xacro:property name="l_elevator"   value= "0.22"/> <!-- [m] -->
+  <xacro:property name="w_elevator"   value= "0.1"/> <!-- [m] -->
+  <xacro:property name="h_elevator"   value= "0.005"/> <!-- [m] -->
+  <xacro:property name="m_elevator"   value= "0.02"/> <!-- [kg] -->
+  <xacro:property name="Ixx_elevator" value= "0.0001"/> <!-- [kg * m^2] -->
+  <xacro:property name="Iyy_elevator" value= "0.0001"/> <!-- [kg * m^2] -->
+  <xacro:property name="Izz_elevator" value= "0.0001"/> <!-- [kg * m^2] -->
+  <xacro:property name="Ixy_elevator" value= "0.0000"/> <!-- [kg * m^2] -->
+  <xacro:property name="Ixz_elevator" value= "0.0000"/> <!-- [kg * m^2] -->
+  <xacro:property name="Iyz_elevator" value= "0.0000"/> <!-- [kg * m^2] -->
+
+  <xacro:property name="x_elevator"   value= "-0.25"/> <!-- [m] -->
+  <xacro:property name="y_elevator"   value= "0.38"/> <!-- [m] -->
+  <xacro:property name="z_elevator"   value= "0.05"/> <!-- [m] -->
+  <xacro:property name="yaw_elevator" value= "${PI*2/3-0.09}"/> <!-- [m] -->
+
+
+</robot>

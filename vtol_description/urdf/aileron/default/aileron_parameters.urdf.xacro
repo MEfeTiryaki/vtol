@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <xacro:property name="l_aileron"   value= "0.22"/> <!-- [m] -->
+  <xacro:property name="w_aileron"   value= "0.1"/> <!-- [m] -->
+  <xacro:property name="h_aileron"   value= "0.005"/> <!-- [m] -->
+  <xacro:property name="m_aileron"   value= "0.02"/> <!-- [kg] -->
+  <xacro:property name="Ixx_aileron" value= "0.0001"/> <!-- [kg * m^2] -->
+  <xacro:property name="Iyy_aileron" value= "0.0001"/> <!-- [kg * m^2] -->
+  <xacro:property name="Izz_aileron" value= "0.0001"/> <!-- [kg * m^2] -->
+  <xacro:property name="Ixy_aileron" value= "0.0000"/> <!-- [kg * m^2] -->
+  <xacro:property name="Ixz_aileron" value= "0.0000"/> <!-- [kg * m^2] -->
+  <xacro:property name="Iyz_aileron" value= "0.0000"/> <!-- [kg * m^2] -->
+
+  <xacro:property name="x_aileron"   value= "-0.345"/> <!-- [m] -->
+  <xacro:property name="y_aileron"   value= "0.59"/> <!-- [m] -->
+  <xacro:property name="z_aileron"   value= "0.05"/> <!-- [m] -->
+  <xacro:property name="yaw_aileron" value= "${PI*2/3-0.09}"/> <!-- [m] -->
+
+
+</robot>

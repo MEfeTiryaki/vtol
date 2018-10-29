@@ -1,0 +1,106 @@
+<?xml version="1.0"?>
+
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <!-- Base -->
+  <xacro:macro name="front_rotor"  params="robot_name base_name side **properties">
+
+    <!-- Xacro:Properties-->
+    <xacro:insert_block name="properties"/>
+    <xacro:property name="left"  value="${int(side.startswith('l'))*2-1}"/>
+    <xacro:if value="${left==1}" >
+      <xacro:property name="rotor_name"  value="RL"/>
+    </xacro:if >
+    <xacro:if value="${left==-1}" >
+      <xacro:property name="rotor_name"  value="RR"/>
+    </xacro:if >
+    <!-- Rotor link -->
+    <link name="${robot_name}_rotor_front_${side}">
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <cylinder radius="${r_rotor}" length="${h_rotor}"/>
+        </geometry>
+      </visual>
+      <collision> <!-- Main Body -->
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <cylinder radius="${r_rotor}" length="${h_rotor}"/>
+        </geometry>
+      </collision>
+      <inertial>
+        <origin   xyz="0 0 0"
+                  rpy="0 0 0"/>
+        <mass     value="${m_rotor}"/>
+        <inertia  ixx="${Ixx_rotor}" ixy="${Ixy_rotor}" ixz="${Ixz_rotor}"
+                  iyy="${Iyy_rotor}" iyz="${Iyz_rotor}" izz="${Izz_rotor}"/>
+      </inertial>
+    </link>
+
+    <joint name="${robot_name}_rotor_front_${side}" type="revolute">
+      <parent link="${base_name}"/>
+      <child link="${robot_name}_rotor_front_${side}"/>
+      <origin xyz="${x_rotor} ${left * y_rotor} ${z_rotor}" rpy="0 0 0"/>
+      <axis xyz="0 1 0" />
+      <limit effort="30" velocity="1.0" lower="-${PI/2}" upper="${PI/2}" />
+    </joint>
+
+    <transmission name="${robot_name}_rotor_transmission_front_${side}">
+      <type>transmission_interface/SimpleTransmission</type>
+      <joint name="${robot_name}_rotor_front_${side}">
+        <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+      </joint>
+      <actuator name="${robot_name}_rotor_actuator_front_${side}">
+        <mechanicalReduction>1</mechanicalReduction>
+        <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+      </actuator>
+    </transmission>
+
+    <link name="${robot_name}_blade_front_${side}">
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <box size="${2*r_blade} ${w_blade} ${h_blade}"/>
+        </geometry>
+      </visual>
+      <collision> <!-- Main Body -->
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+            <box size="${2*r_blade} ${w_blade} ${h_blade}"/>
+        </geometry>
+      </collision>
+      <inertial>
+        <origin   xyz="0 0 0"
+                  rpy="0 0 0"/>
+        <mass     value="${m_blade}"/>
+        <inertia  ixx="${Ixx_blade}" ixy="${Ixy_blade}" ixz="${Ixz_blade}"
+                  iyy="${Iyy_blade}" iyz="${Iyz_blade}" izz="${Izz_blade}"/>
+      </inertial>
+    </link>
+
+    <joint name="${robot_name}_blade_front_${side}" type="continuous">
+      <parent link="${robot_name}_rotor_front_${side}"/>
+      <child link="${robot_name}_blade_front_${side}"/>
+      <origin xyz="0 0 ${h_rotor/2+z_blade}" rpy="0 0 0"/>
+      <axis xyz="0 0 1" />
+    </joint>
+
+    <gazebo>
+      <plugin name="gazebo_ros_control"
+        filename="librotor_gazebo.so">
+        <robot_name>${robot_name}</robot_name>
+        <rotor_name>${rotor_name}</rotor_name>
+        <link_name>${robot_name}_blade_front_${side}</link_name>
+        <joint_name>${robot_name}_blade_front_${side}</joint_name>
+        <max_speed>20000</max_speed>
+        <thrust_coefficient>0.00004</thrust_coefficient>
+        <simulation_speed_ratio>0.01</simulation_speed_ratio>
+        <debug>true</debug>
+      </plugin>
+    </gazebo>
+
+  </xacro:macro>
+
+
+
+</robot>

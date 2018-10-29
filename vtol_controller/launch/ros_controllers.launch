@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<launch>
+  <!-- launch file parameters -->
+  <arg name="robot_namespace" default="vtol_0000" />
+  <arg name="debug"     default="true" />
+  <arg name="controllers" />
+
+  <arg if="$(arg debug)"      name="OUTPUT" value="screen"/>
+  <arg unless="$(arg debug)"  name="OUTPUT" value="log"/>
+   <!-- hardware controllers -->
+  <rosparam file="$(find vtol_controller)/config/hardware_controllers.yaml" command="load" />
+
+   <!-- load controllers -->
+   <node name="robot_controllers" pkg="controller_manager" type="spawner" output="$(arg OUTPUT)" args="$(arg controllers)"/>
+
+</launch>

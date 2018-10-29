@@ -1,0 +1,77 @@
+<?xml version="1.0"?>
+<!--  File name: vtol.urdf.xacro
+      Author: Mehmet Efe Tiryaki
+      E-mail: m.efetiryaki@gmail.com
+      Date created: 26.10.2018
+      Date last modified: 26.10.2018
+-->
+
+<robot name="vtol" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <!-- Arguments -->
+  <xacro:arg name="robot_name"          default="vtol_0000"/>
+  <xacro:arg name="simulation"          default="true"/>
+  <xacro:arg name="fixed"               default="false"/>
+  <xacro:arg name="material_color_rgba" default="0.7 0.7 0.7 1.0"/>
+  <xacro:arg name="simulate_using_gpu"  default="true"/>
+
+  <!-- Component versions -->
+  <xacro:property name="base_version"    value="0_0_0"/>
+  <xacro:property name="rotor_type"    value="default"/>
+  <xacro:property name="elevator_type"    value="default"/>
+  <xacro:property name="aileron_type"    value="default"/>
+  <xacro:property name="robot_name" value="$(arg robot_name)" />
+
+  <!-- Includes -->
+  <xacro:include filename="$(find vtol_description)/urdf/include/vtol_utils.urdf.xacro"/>
+  <xacro:include filename="$(find vtol_description)/urdf/base/${base_version}/vtol_base.urdf.xacro"/>
+  <xacro:include filename="$(find vtol_description)/urdf/rotor/${rotor_type}/front_rotor.urdf.xacro"/>
+  <xacro:include filename="$(find vtol_description)/urdf/rotor/${rotor_type}/hind_rotor.urdf.xacro"/>
+  <xacro:include filename="$(find vtol_description)/urdf/elevator/${elevator_type}/elevator.urdf.xacro"/>
+  <xacro:include filename="$(find vtol_description)/urdf/aileron/${aileron_type}/aileron.urdf.xacro"/>
+
+  <!-- Base -->
+  <xacro:vtol_base robot_name="${robot_name}" name="base">
+    <properties>
+      <xacro:include filename="$(find vtol_description)/urdf/base/${base_version}/vtol_base_parameters.urdf.xacro"/>
+    </properties>
+  </xacro:vtol_base>
+
+  <xacro:front_rotor robot_name="${robot_name}" base_name="${robot_name}_base" side="right">
+    <properties>
+      <xacro:include filename="$(find vtol_description)/urdf/rotor/${rotor_type}/front_rotor_parameters.urdf.xacro"/>
+    </properties>
+  </xacro:front_rotor>
+  <xacro:front_rotor robot_name="${robot_name}" base_name="${robot_name}_base" side="left">
+    <properties>
+      <xacro:include filename="$(find vtol_description)/urdf/rotor/${rotor_type}/front_rotor_parameters.urdf.xacro"/>
+    </properties>
+  </xacro:front_rotor>
+  <xacro:hind_rotor robot_name="${robot_name}" base_name="${robot_name}_base" >
+    <properties>
+      <xacro:include filename="$(find vtol_description)/urdf/rotor/${rotor_type}/hind_rotor_parameters.urdf.xacro"/>
+    </properties>
+  </xacro:hind_rotor>
+
+  <xacro:elevator robot_name="${robot_name}" base_name="${robot_name}_base" side="right">
+    <properties>
+      <xacro:include filename="$(find vtol_description)/urdf/elevator/${elevator_type}/elevator_parameters.urdf.xacro"/>
+    </properties>
+  </xacro:elevator>
+  <xacro:elevator robot_name="${robot_name}" base_name="${robot_name}_base" side="left">
+    <properties>
+      <xacro:include filename="$(find vtol_description)/urdf/elevator/${elevator_type}/elevator_parameters.urdf.xacro"/>
+    </properties>
+  </xacro:elevator>
+
+  <xacro:aileron robot_name="${robot_name}" base_name="${robot_name}_base" side="right">
+    <properties>
+      <xacro:include filename="$(find vtol_description)/urdf/aileron/${aileron_type}/aileron_parameters.urdf.xacro"/>
+    </properties>
+  </xacro:aileron>
+  <xacro:aileron robot_name="${robot_name}" base_name="${robot_name}_base" side="left">
+    <properties>
+      <xacro:include filename="$(find vtol_description)/urdf/aileron/${aileron_type}/aileron_parameters.urdf.xacro"/>
+    </properties>
+  </xacro:aileron>
+</robot>

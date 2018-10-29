@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <xacro:property name="m"              value= "0.01"/> <!-- [kg] -->
+  <xacro:property name="Ixx"            value= "0.0001"/> <!-- [kg * m^2] -->
+  <xacro:property name="Iyy"            value= "0.0001"/> <!-- [kg * m^2] -->
+  <xacro:property name="Izz"            value= "0.0001"/> <!-- [kg * m^2] -->
+  <xacro:property name="Ixy"            value= "0.0000"/> <!-- [kg * m^2] -->
+  <xacro:property name="Ixz"            value= "0.0000"/> <!-- [kg * m^2] -->
+  <xacro:property name="Iyz"            value= "0.0000"/> <!-- [kg * m^2] -->
+
+  <xacro:property name="r_rotor"   value= "0.03"/> <!-- [m] -->
+  <xacro:property name="h_rotor"   value= "0.05"/> <!-- [m] -->
+  <xacro:property name="m_rotor"   value= "0.02"/> <!-- [kg] -->
+  <xacro:property name="Ixx_rotor" value= "0.0001"/> <!-- [kg * m^2] -->
+  <xacro:property name="Iyy_rotor" value= "0.0001"/> <!-- [kg * m^2] -->
+  <xacro:property name="Izz_rotor" value= "0.0001"/> <!-- [kg * m^2] -->
+  <xacro:property name="Ixy_rotor" value= "0.0000"/> <!-- [kg * m^2] -->
+  <xacro:property name="Ixz_rotor" value= "0.0000"/> <!-- [kg * m^2] -->
+  <xacro:property name="Iyz_rotor" value= "0.0000"/> <!-- [kg * m^2] -->
+
+  <xacro:property name="x_rotor"   value= "0.4"/> <!-- [m] -->
+  <xacro:property name="y_rotor"   value= "0.0"/> <!-- [m] -->
+  <xacro:property name="z_rotor"   value= "0.1"/> <!-- [m] -->
+
+  <xacro:property name="r_blade"   value= "0.1"/> <!-- [m] -->
+  <xacro:property name="w_blade"   value= "0.02"/> <!-- [m] -->
+  <xacro:property name="h_blade"   value= "0.005"/> <!-- [m] -->
+  <xacro:property name="m_blade"   value= "0.001"/> <!-- [kg] -->
+  <xacro:property name="Ixx_blade" value= "0.0001"/> <!-- [kg * m^2] -->
+  <xacro:property name="Iyy_blade" value= "0.0001"/> <!-- [kg * m^2] -->
+  <xacro:property name="Izz_blade" value= "0.0001"/> <!-- [kg * m^2] -->
+  <xacro:property name="Ixy_blade" value= "0.0000"/> <!-- [kg * m^2] -->
+  <xacro:property name="Ixz_blade" value= "0.0000"/> <!-- [kg * m^2] -->
+  <xacro:property name="Iyz_blade" value= "0.0000"/> <!-- [kg * m^2] -->
+  <xacro:property name="z_blade"   value= "0.01"/> <!-- [m] -->
+
+
+</robot>

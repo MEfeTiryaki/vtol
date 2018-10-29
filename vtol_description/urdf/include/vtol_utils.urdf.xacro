@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<!--  File name: vtol_utils.urdf.xacro
+      Author: Mehmet Efe Tiryaki
+      E-mail: m.efetiryaki@gmail.com
+      Date created: 26.10.2018
+      Date last modified: 26.10.2018
+-->
+<robot name="vtol" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <!-- Import shared components -->
+    <xacro:include filename="$(find vtol_description)/urdf/include/vtol_plugin.gazebo.xacro"/>
+
+  <!-- Math constants -->
+  <xacro:property name="PI" value="3.1415926535897931"/>
+
+  <!-- Material for the visual primitives -->
+  <material name="vtol_material" >
+    <color rgba="$(arg material_color_rgba)"/>
+  </material>
+
+</robot>

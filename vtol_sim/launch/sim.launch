@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<launch>
+
+  <!-- ROBOT SPECIFIC ARGUMENTS -->
+  <!-- Robot description name -->
+  <arg name="robot_description"                        default="vtol"/>
+
+  <!-- ROBOT ID -->
+  <arg name="robot_id"                                  default="0001"/>
+
+  <!-- Set the name of the robot -->
+  <arg name="robot_name"                                default="$(arg robot_description)_$(arg robot_id)"/>
+
+  <!-- Set robot description path -->
+  <arg name="description_file"                          default="$(find vtol_description)/urdf/vtol.urdf.xacro"/>
+
+  <!-- PARAMETERS -->
+  <!-- Set global simulation parameter -->
+  <arg name="simulation"                                default="true"/>
+  <arg name="debug"                                     default="false"/>
+
+  <!-- WORLD MAP -->
+  <arg name="world_file"                                default="$(find vtol_gazebo)/worlds/empty.world"/>
+
+  <!-- GUI ARGUMENTS -->
+  <!-- Enable/disable Gazebo GUI -->
+  <arg name="run_gazebo_gui"                            default="true"/>
+  <!-- Enable/disable rviz -->
+  <arg name="run_rviz"                                  default="true"/>
+  <!-- rviz configuration -->
+  <arg name="rviz_config_path"                          default="$(find vtol_sim)/config/rviz/vtol.rviz"/>
+
+
+  <!-- GAZEBO -->
+  <include file="$(find vtol_gazebo)/launch/gazebo.launch">
+    <arg name="use_sim_time"      value="true"/>
+    <arg name="gui"               value="$(arg run_gazebo_gui)"/>
+    <arg name="world_name"        value="$(arg world_file)"/>
+    <arg name="verbose"           value="false"/>
+    <arg name="simulation"        value="$(arg simulation)"/>
+    <arg name="robot_name"        value="$(arg robot_name)"/>
+  </include>
+  <!-- RVIZ -->
+  <group if="$(arg run_rviz)">
+    <include file="$(find vtol_description)/launch/rviz/rviz.launch">
+      <arg name="rviz_config_path"          value="$(arg rviz_config_path)"/>
+    </include>
+  </group>
+
+
+  <!-- ROBOTS -->
+  <include file="$(find vtol_description)/launch/vtol.launch">
+    <arg name="robot_namespace"    value="vtol_0001"/>
+    <arg name="simulation"    value="$(arg simulation)"/>
+    <arg name="debug"         value="$(arg debug)"/>
+    <arg name="x"         value="0.0"/>
+    <arg name="y"         value="0.0"/>
+    <arg name="z"         value="0.1"/>
+  </include>
+
+
+</launch>
