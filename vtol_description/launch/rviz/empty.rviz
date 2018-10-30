@@ -62,6 +62,16 @@ Visualization Manager:
         Expand Link Details: false
         Expand Tree: false
         Link Tree Style: Links in Alphabetic Order
+        vtol_0000_aileron_left:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        vtol_0000_aileron_right:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
         vtol_0000_base:
           Alpha: 1
           Show Axes: false
@@ -71,6 +81,46 @@ Visualization Manager:
           Alpha: 1
           Show Axes: false
           Show Trail: false
+        vtol_0000_blade_front_left:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        vtol_0000_blade_front_right:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        vtol_0000_blade_hind:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        vtol_0000_elevator_left:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        vtol_0000_elevator_right:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        vtol_0000_rotor_front_left:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        vtol_0000_rotor_front_right:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        vtol_0000_rotor_hind:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
       Name: RobotModel
       Robot Description: vtol_0000/robot_description
       TF Prefix: ""
@@ -131,10 +181,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.00999999978
-      Pitch: 0.349797636
+      Pitch: 0.384797901
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 0.847211421
+      Yaw: 1.2672112
     Saved: ~
 Window Geometry:
   Displays:
@@ -152,5 +202,5 @@ Window Geometry:
   Views:
     collapsed: true
   Width: 1797
-  X: 402
+  X: 530
   Y: 27

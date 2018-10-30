@@ -17,7 +17,7 @@
 
   <!-- Component versions -->
   <xacro:property name="base_version"    value="0_0_0"/>
-  <xacro:property name="rotor_type"    value="default"/>
+  <xacro:property name="rotor_type"    value="double"/>
   <xacro:property name="elevator_type"    value="default"/>
   <xacro:property name="aileron_type"    value="default"/>
   <xacro:property name="robot_name" value="$(arg robot_name)" />

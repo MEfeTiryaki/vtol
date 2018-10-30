@@ -137,41 +137,33 @@ void RotorGazeboPlugin::writeSimulation()
 
   // APPLY TRUST ON ROTOR
   thrust_ = thrustCoefficient_ * command_.data * command_.data ;
-  parentLink_->SetForce(math::Vector3(0,0,thrust_));
+  link_->AddRelativeForce(math::Vector3( 0,0,thrust_));
+
+  // APPLY DRAG
+
 
 }
 void RotorGazeboPlugin::readSimulation()
 {
   double yaw = joint_->GetAngle(0).Radian();
-  math::Pose orientationRotorToBladeMath = parentLink_->GetInitialRelativePose().GetInverse()
-                                      * link_->GetInitialRelativePose()
-                                      * math::Pose(0,0,0,0,0,yaw);
-  positionRotorToBlade_ << orientationRotorToBladeMath.pos.x
-                        , orientationRotorToBladeMath.pos.y
-                        , orientationRotorToBladeMath.pos.z;
-  orientationRotorToBlade_ << orientationRotorToBladeMath.rot.x
-                            , orientationRotorToBladeMath.rot.y
-                            , orientationRotorToBladeMath.rot.z
-                            , orientationRotorToBladeMath.rot.w ;
-
+  math::Pose orientationRotorToBladeMath =  math::Pose(0,0,0,0,0,yaw)
+                                      * parentLink_->GetInitialRelativePose().GetInverse()
+                                      * link_->GetInitialRelativePose() ;
+  T_rotor_blade_.setOrigin(tf::Vector3(orientationRotorToBladeMath.pos.x
+                                      ,orientationRotorToBladeMath.pos.y
+                                      ,orientationRotorToBladeMath.pos.z));
+  T_rotor_blade_.setRotation(tf::Quaternion(orientationRotorToBladeMath.rot.x
+                                           ,orientationRotorToBladeMath.rot.y
+                                           ,orientationRotorToBladeMath.rot.z
+                                           ,orientationRotorToBladeMath.rot.w));
 
 }
 
 void RotorGazeboPlugin::publishTF(){
   static tf::TransformBroadcaster br;
   tf::Transform transform;
-
-  transform.setOrigin( tf::Vector3( positionRotorToBlade_[0]
-                                  , positionRotorToBlade_[1]
-                                  , positionRotorToBlade_[2]));
-  tf::Quaternion q = tf::Quaternion( orientationRotorToBlade_[0]
-                                   , orientationRotorToBlade_[1]
-                                   , orientationRotorToBlade_[2]
-                                   , orientationRotorToBlade_[3]);
-  transform.setRotation(q);
-
   br.sendTransform(tf::StampedTransform(
-                    transform
+                    T_rotor_blade_
                   , ros::Time::now()
                   , link_->GetParentJointsLinks().at(0)->GetName()
                   , linkName_));
@@ -181,7 +173,7 @@ void RotorGazeboPlugin::publishTF(){
 void RotorGazeboPlugin::publish(){
   visualization_msgs::Marker marker;
   marker.header.stamp = ros::Time();
-  marker.header.frame_id = link_->GetParentJointsLinks().at(0)->GetName() ;
+  marker.header.frame_id = linkName_ ;
   marker.id = 0;
   marker.type = visualization_msgs::Marker::ARROW;
   marker.action = visualization_msgs::Marker::ADD;
@@ -189,12 +181,12 @@ void RotorGazeboPlugin::publish(){
   marker.pose.position.y = 0.0 ;
   marker.pose.position.z = 0.0 ;
   marker.pose.orientation.x = 0.0;
-  marker.pose.orientation.y = -sqrt(0.5);
+  marker.pose.orientation.y = -sin(0.5);
   marker.pose.orientation.z = 0.0;
-  marker.pose.orientation.w = sqrt(0.5);
-  marker.scale.x = 1.0 * thrust_;
-  marker.scale.y = 0.005;
-  marker.scale.z = 0.005;
+  marker.pose.orientation.w = sin(0.5);
+  marker.scale.x = 1.0  * thrust_;
+  marker.scale.y = 0.01 ;
+  marker.scale.z = 0.01 ;
   marker.color.a = 1.0; // Don't forget to set the alpha!
   marker.color.r = 0.0;
   marker.color.g = 1.0;

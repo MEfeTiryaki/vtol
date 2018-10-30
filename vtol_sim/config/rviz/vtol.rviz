@@ -8,8 +8,6 @@ Panels:
         - /Status1
         - /Grid1
         - /RobotModel1
-        - /Marker1
-        - /Marker2
       Splitter Ratio: 0.5
     Tree Height: 1092
   - Class: rviz/Selection
@@ -81,17 +79,17 @@ Visualization Manager:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-        vtol_0001_blade_front_left:
+        vtol_0001_bottom_blade_front_left:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        vtol_0001_blade_front_right:
+        vtol_0001_bottom_blade_front_right:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        vtol_0001_blade_hind:
+        vtol_0001_bottom_blade_hind:
           Alpha: 1
           Show Axes: false
           Show Trail: false
@@ -121,6 +119,21 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
+        vtol_0001_top_blade_front_left:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        vtol_0001_top_blade_front_right:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        vtol_0001_top_blade_hind:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
       Name: RobotModel
       Robot Description: /vtol_0001/robot_description
       TF Prefix: ""
@@ -129,18 +142,50 @@ Visualization Manager:
       Visual Enabled: true
     - Class: rviz/Marker
       Enabled: true
-      Marker Topic: /vtol_0001/RLthrust_marker
+      Marker Topic: /vtol_0001/RH/drag_marker
       Name: Marker
       Namespaces:
-        "": true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
       Enabled: true
-      Marker Topic: /vtol_0001/RRthrust_marker
+      Marker Topic: /vtol_0001/RH/thrust_marker
       Name: Marker
       Namespaces:
-        "": true
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /vtol_0001/RL/drag_marker
+      Name: Marker
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /vtol_0001/RL/thrust_marker
+      Name: Marker
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /vtol_0001/RR/drag_marker
+      Name: Marker
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /vtol_0001/RR/thrust_marker
+      Name: Marker
+      Namespaces:
+        {}
       Queue Size: 100
       Value: true
   Enabled: true
@@ -168,7 +213,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 1.86014104
+      Distance: 4.38869381
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.0599999987
         Stereo Focal Distance: 1
@@ -183,10 +228,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.00999999978
-      Pitch: 0.440398276
+      Pitch: 0.71539849
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 0.492212474
+      Yaw: 0.617212594
     Saved: ~
 Window Geometry:
   Displays:

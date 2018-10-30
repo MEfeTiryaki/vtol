@@ -54,14 +54,14 @@
 
 
 namespace gazebo {
-class RotorGazeboPlugin : public ModelPlugin
+class DoubleRotorGazeboPlugin : public ModelPlugin
 {
  public:
   // Constructor.
-  RotorGazeboPlugin();
+  DoubleRotorGazeboPlugin();
 
   // Destructor.
-  virtual ~RotorGazeboPlugin();
+  virtual ~DoubleRotorGazeboPlugin();
 
   // Implements Gazebo virtual load function.
   virtual void Load(physics::ModelPtr model, sdf::ElementPtr /*_sdf*/);
@@ -96,7 +96,8 @@ class RotorGazeboPlugin : public ModelPlugin
   virtual void publishTF();
   virtual void publish();
 
-  void CommandsCallback(const std_msgs::Float64& msg);
+  void TopCommandsCallback(const std_msgs::Float64& msg);
+  void BottomCommandsCallback(const std_msgs::Float64& msg);
 
   // Debug Bool
    bool debug_;
@@ -109,26 +110,28 @@ class RotorGazeboPlugin : public ModelPlugin
 
   // Name of the robot.
   std::string robotName_;
-  std::string linkName_;
-  std::string jointName_;
+  std::string topLinkName_;
+  std::string topJointName_;
+  std::string bottomLinkName_;
+  std::string bottomJointName_;
   std::string rotorName_;
   std::string parentLinkName_;
+  std::string baseLinkName_;
 
   // Pulishers
-  ros::Publisher visualizationPublisher_;
+  ros::Publisher forceVisualizationPublisher_;
+  ros::Publisher torqueVisualizationPublisher_;
   // Publisher names
   //std::string leftMotorAnglePublisherName_;
   // Publisher queue_size
   //int leftMotorAnglePublisherQueueSize_;
 
   // Subscriber
-  ros::Subscriber commandSubscriber_;
-  // Subscriber names
-  std::string commandSubscriberName_;
-  // Subscriber queue_size
-  int commandSubscriberQueueSize_;
+  ros::Subscriber topCommandSubscriber_;
+  ros::Subscriber bottomCommandSubscriber_;
   // Subscriber msgs
-  std_msgs::Float64 command_;
+  std_msgs::Float64 topCommand_;
+  std_msgs::Float64 bottomCommand_;
 
   // Model.
   physics::ModelPtr model_;
@@ -136,23 +139,34 @@ class RotorGazeboPlugin : public ModelPlugin
   event::ConnectionPtr updateConnection_;
 
   // Robot links
-  physics::LinkPtr link_;
+  physics::LinkPtr topLink_;
+  physics::LinkPtr bottomLink_;
   physics::LinkPtr parentLink_;
+  physics::LinkPtr baseLink_;
 
-  physics::JointPtr joint_;
+  physics::JointPtr topJoint_;
+  physics::JointPtr bottomJoint_;
 
   double simulationSpeedRatio_;
 
-  tf::Transform T_rotor_blade_;
+  tf::Transform T_rotor_top_blade_;
+  tf::Transform T_rotor_bottom_blade_;
   tf::Transform T_base_rotor_;
   tf::Transform T_base_blade_;
   tf::Transform T_world_rotor_;
-
+  math::Pose poseTopLinkToParent_;
+  math::Pose poseBottomLinkToParent_;
 
   double thrust_ ;
+  double torque_ ;
   double thrustCoefficient_;
+  double dragCoefficient_;
+  double reductionCoefficient_;
   tf::Vector3 thrustVector_;
   tf::Transform rotorNormal_;
+
+
+
 
 };
 

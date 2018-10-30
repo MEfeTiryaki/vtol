@@ -25,7 +25,7 @@
 
   <!-- GUI ARGUMENTS -->
   <!-- Enable/disable Gazebo GUI -->
-  <arg name="run_gazebo_gui"                            default="true"/>
+  <arg name="run_gazebo_gui"                            default="false"/>
   <!-- Enable/disable rviz -->
   <arg name="run_rviz"                                  default="true"/>
   <!-- rviz configuration -->

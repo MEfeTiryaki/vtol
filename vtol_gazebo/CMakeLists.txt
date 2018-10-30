@@ -58,6 +58,16 @@ target_link_libraries(rotor_gazebo
   ${GAZEBO_LIBRARIES}
 )
 
+add_library(double_rotor_gazebo
+  src/DoubleRotorGazeboPlugin.cpp
+)
+add_dependencies(double_rotor_gazebo
+  ${catkin_EXPORTED_TARGETS}
+)
+target_link_libraries(double_rotor_gazebo
+  ${catkin_LIBRARIES}
+  ${GAZEBO_LIBRARIES}
+)
 add_library(vtol_base_gazebo
   src/VtolBaseGazeboPlugin.cpp
 )

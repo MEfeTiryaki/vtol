@@ -1,0 +1,121 @@
+<?xml version="1.0"?>
+
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <!-- Base -->
+  <xacro:macro name="hind_rotor"  params="robot_name base_name **properties">
+
+    <!-- Xacro:Properties-->
+    <xacro:insert_block name="properties"/>\
+
+    <!-- Rotor link -->
+    <link name="${robot_name}_rotor_hind">
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <cylinder radius="${r_rotor}" length="${h_rotor}"/>
+        </geometry>
+      </visual>
+      <collision> <!-- Main Body -->
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <cylinder radius="${r_rotor}" length="${h_rotor}"/>
+        </geometry>
+      </collision>
+      <inertial>
+        <origin   xyz="0 0 0"
+                  rpy="0 0 0"/>
+        <mass     value="${m_rotor}"/>
+        <inertia  ixx="${Ixx_rotor}" ixy="${Ixy_rotor}" ixz="${Ixz_rotor}"
+                  iyy="${Iyy_rotor}" iyz="${Iyz_rotor}" izz="${Izz_rotor}"/>
+      </inertial>
+    </link>
+
+    <joint name="${robot_name}_rotor_hind" type="fixed">
+      <parent link="${base_name}"/>
+      <child link="${robot_name}_rotor_hind"/>
+      <origin xyz="${-x_rotor} ${y_rotor} ${z_rotor}" rpy="0 0 0"/>
+    </joint>
+
+    <link name="${robot_name}_top_blade_hind">
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <box size="${2*r_blade} ${w_blade} ${h_blade}"/>
+        </geometry>
+      </visual>
+      <collision> <!-- Main Body -->
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+            <box size="${2*r_blade} ${w_blade} ${h_blade}"/>
+        </geometry>
+      </collision>
+      <inertial>
+        <origin   xyz="0 0 0"
+                  rpy="0 0 0"/>
+        <mass     value="${m_blade}"/>
+        <inertia  ixx="${Ixx_blade}" ixy="${Ixy_blade}" ixz="${Ixz_blade}"
+                  iyy="${Iyy_blade}" iyz="${Iyz_blade}" izz="${Izz_blade}"/>
+      </inertial>
+    </link>
+
+    <joint name="${robot_name}_top_blade_hind" type="continuous">
+      <parent link="${robot_name}_rotor_hind"/>
+      <child link="${robot_name}_top_blade_hind"/>
+      <origin xyz="0 0 ${h_rotor/2+z_blade}" rpy="0 0 0"/>
+      <axis xyz="0 0 1" />
+    </joint>
+
+
+    <link name="${robot_name}_bottom_blade_hind">
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <box size="${2*r_blade} ${w_blade} ${h_blade}"/>
+        </geometry>
+      </visual>
+      <collision> <!-- Main Body -->
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+            <box size="${2*r_blade} ${w_blade} ${h_blade}"/>
+        </geometry>
+      </collision>
+      <inertial>
+        <origin   xyz="0 0 0"
+                  rpy="0 0 0"/>
+        <mass     value="${m_blade}"/>
+        <inertia  ixx="${Ixx_blade}" ixy="${Ixy_blade}" ixz="${Ixz_blade}"
+                  iyy="${Iyy_blade}" iyz="${Iyz_blade}" izz="${Izz_blade}"/>
+      </inertial>
+    </link>
+
+    <joint name="${robot_name}_bottom_blade_hind" type="continuous">
+      <parent link="${robot_name}_rotor_hind"/>
+      <child link="${robot_name}_bottom_blade_hind"/>
+      <origin xyz="0 0 ${-h_rotor/2-z_blade}" rpy="0 0 0"/>
+      <axis xyz="0 0 1" />
+    </joint>
+
+    <gazebo>
+      <plugin name="gazebo_ros_control"
+        filename="libdouble_rotor_gazebo.so">
+        <robot_name>${robot_name}</robot_name>
+        <rotor_name>RH</rotor_name>
+        <base_link_name>${base_name}</base_link_name>
+        <top_link_name>${robot_name}_top_blade_hind</top_link_name>
+        <top_joint_name>${robot_name}_top_blade_hind</top_joint_name>
+        <bottom_link_name>${robot_name}_bottom_blade_hind</bottom_link_name>
+        <bottom_joint_name>${robot_name}_bottom_blade_hind</bottom_joint_name>
+        <max_speed>20000</max_speed>
+        <thrust_coefficient>0.00004</thrust_coefficient>
+        <drag_coefficient>0.6</drag_coefficient>
+        <second_blade_reduction>0.8</second_blade_reduction>
+        <simulation_speed_ratio>0.01</simulation_speed_ratio>
+        <debug>true</debug>
+      </plugin>
+    </gazebo>
+  </xacro:macro>
+
+
+
+</robot>
