@@ -41,6 +41,7 @@
     <arg name="simulation"        value="$(arg simulation)"/>
     <arg name="robot_name"        value="$(arg robot_name)"/>
   </include>
+
   <!-- RVIZ -->
   <group if="$(arg run_rviz)">
     <include file="$(find vtol_description)/launch/rviz/rviz.launch">
@@ -54,6 +55,7 @@
     <arg name="robot_namespace"    value="vtol_0001"/>
     <arg name="simulation"    value="$(arg simulation)"/>
     <arg name="debug"         value="$(arg debug)"/>
+    <arg name="simulation_parameter_file"         value="$(find vtol_sim)/config/vtol/parameters_sim.yaml"/>
     <arg name="x"         value="0.0"/>
     <arg name="y"         value="0.0"/>
     <arg name="z"         value="0.1"/>

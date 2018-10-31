@@ -1,5 +1,9 @@
 /*
- Author : M. Efe Tiryaki
+File name: DoubleRotorGazeboPlugin.cpp
+Author: Mehmet Efe Tiryaki
+E-mail: m.efetiryaki@gmail.com
+Date created: 30.10.2018
+Date last modified: 30.10.2018
  */
 
 

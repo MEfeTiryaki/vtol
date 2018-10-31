@@ -1,7 +1,10 @@
 /*
- Author : M. Efe Tiryaki
+File name: RotorGazeboPlugin.cpp
+Author: Mehmet Efe Tiryaki
+E-mail: m.efetiryaki@gmail.com
+Date created: 29.10.2018
+Date last modified: 30.10.2018
  */
-
 
 #include "vtol_gazebo/RotorGazeboPlugin.hpp"
 namespace gazebo {

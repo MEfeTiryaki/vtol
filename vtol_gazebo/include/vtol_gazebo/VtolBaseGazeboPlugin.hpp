@@ -57,16 +57,16 @@ class VtolBaseGazeboPlugin : public ModelPlugin
   VtolBaseGazeboPlugin();
 
   // Destructor.
-  virtual ~VtolBaseGazeboPlugin();
+  virtual ~VtolBaseGazeboPlugin(){};
 
   // Implements Gazebo virtual load function.
   virtual void Load(physics::ModelPtr model, sdf::ElementPtr /*_sdf*/);
 
   // Overrides Gazebo init function.
-  virtual void Init();
+  virtual void Init(){};
 
   // Overrides Gazebo reset function.
-  virtual void Reset();
+  virtual void Reset(){};
 
   virtual void OnUpdate();
 
@@ -74,7 +74,7 @@ class VtolBaseGazeboPlugin : public ModelPlugin
   // Reads parameters from the parameter server.
   virtual void readParameters(sdf::ElementPtr sdf);
 
-  virtual void initJointStructures() ;
+  virtual void initJointStructures(){};
 
   virtual void initLinkStructure() ;
 
@@ -89,6 +89,18 @@ class VtolBaseGazeboPlugin : public ModelPlugin
   // Writes simulation state.
   virtual void writeSimulation();
 
+  virtual void publishTF();
+  virtual void publish();
+
+  //
+  virtual void calculateAerodynamics();
+  // CALLBACKS
+  void AileronRightCommandsCallback(const std_msgs::Float64& msg);
+  void AileronLeftCommandsCallback(const std_msgs::Float64& msg);
+  void ElevatorRightCommandsCallback(const std_msgs::Float64& msg);
+  void ElevatorLeftCommandsCallback(const std_msgs::Float64& msg);
+
+
   // Debug Bool
    bool debug_;
   // Ros node
@@ -96,18 +108,12 @@ class VtolBaseGazeboPlugin : public ModelPlugin
   ros::NodeHandle* nodeHandle_;
 
   // Ensures gazebo methods are called sequentially
-  std::recursive_mutex gazeboMutex_;
+   std::mutex mutex_;
 
   // Name of the robot.
   std::string robotName_;
   std::string linkName_;
 
-  // Pulishers
-  //ros::Publisher leftMotorAnglePublisher_;
-  // Publisher names
-  //std::string leftMotorAnglePublisherName_;
-  // Publisher queue_size
-  //int leftMotorAnglePublisherQueueSize_;
 
   // Model.
   physics::ModelPtr model_;
@@ -123,6 +129,75 @@ class VtolBaseGazeboPlugin : public ModelPlugin
   Eigen::Vector3d linearVelocityWorldToBase_;
   Eigen::Vector3d angularVelocityWorldToBase_;
 
+  // Control surface angles
+  double angleAileronRight_;
+  double angleAileronLeft_;
+  double angleElevatorRight_;
+  double angleElevatorLeft_;
+  // Subscriber
+  ros::Subscriber aileronRightSubscriber_;
+  ros::Subscriber aileronLeftSubscriber_;
+  ros::Subscriber elevatorRightSubscriber_;
+  ros::Subscriber elevatorLeftSubscriber_;
+
+
+  // AERODYNAMIC FORCES and Moments
+  Eigen::Vector3d forceOnBodyInWorldFrame_;
+  Eigen::Vector3d torqueOnBodyInWorldFrame_;
+  // AERODYNAMIC PARAMETERS
+  /*
+    ail_ ;
+    alpha_wake_ ;
+    alpha_ ;
+    alphalim_wake_ ;
+    alphalim_ ;
+    cd_alpha_elv_ ;
+    cd_alpha_wake_ ;
+    cd_alpha_ ;
+    cl_ail_ ;
+    cl_alpha_wake_ ;
+    cl_alpha_ ;
+    cl_beta_ ;
+    cd_alpha_elv_ ;
+    cd_elv_ ;
+    cl_p_ ;
+    cl_r_ ;
+    cm_alpha_wake_ ;
+    cm_alpha_ ;
+    cm_elv_ ;
+    cn_ail_ ;
+    cn_beta_ ;
+    cn_p_ ;
+    cn_r_ ;
+    cy_p_ ;
+    ele_ ;
+    elelim_ ;
+  */
+  Eigen::VectorXd  ail_ ;
+  Eigen::VectorXd alpha_wake_ ;
+  Eigen::VectorXd alpha_ ;
+  Eigen::VectorXd alphalim_wake_ ;
+  Eigen::VectorXd alphalim_ ;
+  Eigen::MatrixXd cd_alpha_elv_ ;
+  Eigen::VectorXd cd_alpha_wake_ ;
+  Eigen::VectorXd cd_alpha_ ;
+  Eigen::VectorXd cl_ail_ ;
+  Eigen::VectorXd cl_alpha_wake_ ;
+  Eigen::VectorXd cl_alpha_ ;
+  Eigen::VectorXd cl_beta_ ;
+  Eigen::VectorXd cl_elv_ ;
+  Eigen::VectorXd cl_p_ ;
+  Eigen::VectorXd cl_r_ ;
+  Eigen::VectorXd cm_alpha_wake_ ;
+  Eigen::VectorXd cm_alpha_ ;
+  Eigen::VectorXd cm_elv_ ;
+  Eigen::MatrixXd  cn_ail_ ;
+  Eigen::VectorXd cn_beta_ ;
+  Eigen::VectorXd cn_p_ ;
+  Eigen::VectorXd cn_r_ ;
+  Eigen::VectorXd cy_p_ ;
+  Eigen::VectorXd ele_ ;
+  Eigen::VectorXd elelim_ ;
 
 };
 

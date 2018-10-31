@@ -1,5 +1,9 @@
 /*
- Author : M. Efe Tiryaki
+File name: DoubleRotorGazeboPlugin.hpp
+Author: Mehmet Efe Tiryaki
+E-mail: m.efetiryaki@gmail.com
+Date created: 30.10.2018
+Date last modified: 30.10.2018
  */
 
 #pragma once
@@ -121,10 +125,6 @@ class DoubleRotorGazeboPlugin : public ModelPlugin
   // Pulishers
   ros::Publisher forceVisualizationPublisher_;
   ros::Publisher torqueVisualizationPublisher_;
-  // Publisher names
-  //std::string leftMotorAnglePublisherName_;
-  // Publisher queue_size
-  //int leftMotorAnglePublisherQueueSize_;
 
   // Subscriber
   ros::Subscriber topCommandSubscriber_;
@@ -164,8 +164,6 @@ class DoubleRotorGazeboPlugin : public ModelPlugin
   double reductionCoefficient_;
   tf::Vector3 thrustVector_;
   tf::Transform rotorNormal_;
-
-
 
 
 };

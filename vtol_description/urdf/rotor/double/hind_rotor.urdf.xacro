@@ -111,7 +111,7 @@
         <drag_coefficient>0.6</drag_coefficient>
         <second_blade_reduction>0.8</second_blade_reduction>
         <simulation_speed_ratio>0.01</simulation_speed_ratio>
-        <debug>true</debug>
+        <debug>false</debug>
       </plugin>
     </gazebo>
   </xacro:macro>
