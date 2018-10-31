@@ -1,7 +1,10 @@
 /*
- Author : M. Efe Tiryaki
+File name: VtolBaseGazeboPlugin.cpp
+Author: Mehmet Efe Tiryaki
+E-mail: m.efetiryaki@gmail.com
+Date created: 28.10.2018
+Date last modified: 31.10.2018
  */
-
 
 #include "vtol_gazebo/VtolBaseGazeboPlugin.hpp"
 namespace gazebo {

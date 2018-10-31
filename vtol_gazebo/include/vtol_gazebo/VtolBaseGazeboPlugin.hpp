@@ -1,5 +1,9 @@
 /*
- Author : M. Efe Tiryaki
+File name: VtolBaseGazeboPlugin.hpp
+Author: Mehmet Efe Tiryaki
+E-mail: m.efetiryaki@gmail.com
+Date created: 28.10.2018
+Date last modified: 31.10.2018
  */
 
 #pragma once
