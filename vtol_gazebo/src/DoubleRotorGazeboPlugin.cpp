@@ -9,7 +9,7 @@
 #include "vtol_gazebo/DoubleRotorGazeboPlugin.hpp"
 namespace gazebo {
 
-// Todo : check if we can add gopigo name here
+// Todo :
 DoubleRotorGazeboPlugin::DoubleRotorGazeboPlugin()
     : nodeHandle_(),
       topCommand_(),
