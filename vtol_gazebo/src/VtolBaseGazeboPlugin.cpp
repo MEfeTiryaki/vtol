@@ -1,9 +1,9 @@
 /*
-File name: VtolBaseGazeboPlugin.cpp
-Author: Mehmet Efe Tiryaki
-E-mail: m.efetiryaki@gmail.com
-Date created: 28.10.2018
-Date last modified: 31.10.2018
+ File name: VtolBaseGazeboPlugin.cpp
+ Author: Mehmet Efe Tiryaki
+ E-mail: m.efetiryaki@gmail.com
+ Date created: 28.10.2018
+ Date last modified: 14.11.2018
  */
 
 #include "vtol_gazebo/VtolBaseGazeboPlugin.hpp"
@@ -12,12 +12,25 @@ namespace gazebo {
 // Todo : check if we can add gopigo name here
 VtolBaseGazeboPlugin::VtolBaseGazeboPlugin()
     : nodeHandle_(),
+      debug_(false),
       angleAileronRight_(0),
       angleAileronLeft_(0),
       angleElevatorRight_(0),
       angleElevatorLeft_(0),
       forceOnBodyInWorldFrame_(Eigen::Vector3d::Zero()),
-      torqueOnBodyInWorldFrame_(Eigen::Vector3d::Zero())
+      torqueOnBodyInWorldFrame_(Eigen::Vector3d::Zero()),
+      mass_(0.0),
+      qbar_(0.0),
+      qbar_wake_(0.0),
+      rho_(0.0),
+      S_wake_(0.0),
+      mass_(1.0),
+      velocity_(0.0),
+      velocityEffective_(0.0),
+      angleOfAttack_(0.0),
+      angleOfAttackDot_(0.0),
+      angleOfAttackEffective_(0.0),
+      sideSlipAngle_(0.0)
 {
 }
 
@@ -40,6 +53,7 @@ void VtolBaseGazeboPlugin::Load(physics::ModelPtr model, sdf::ElementPtr sdf)
   initSubscribers();
   initPublishers();
 
+  aerodynamics_.initilize(nodeHandle_);
   // reset simulation variables
   Reset();
 
@@ -53,322 +67,18 @@ void VtolBaseGazeboPlugin::readParameters(sdf::ElementPtr sdf)
   std::lock_guard<std::mutex> lock(this->mutex_);
   debug_ = sdf->GetElement("debug")->Get<bool>();
 
-  robotName_  = sdf->GetElement("robot_name")->Get<std::string>();
-  if(debug_){std::cout<<"Robot Name : " << robotName_ << std::endl;}
+  robotName_ = sdf->GetElement("robot_name")->Get<std::string>();
+  if (debug_) {
+    std::cout << "Robot Name : " << robotName_ << std::endl;
+  }
 
-  linkName_  = sdf->GetElement("link_name")->Get<std::string>();
-  if(debug_){std::cout<<"link name : " << linkName_ << std::endl;}
-
+  linkName_ = sdf->GetElement("link_name")->Get<std::string>();
+  if (debug_) {
+    std::cout << "link name : " << linkName_ << std::endl;
+  }
 
   // READ PARAMETERS
-  std::vector<double> dummy;
-  int row ;
-  int col ;
-  if (this->nodeHandle_->hasParam(this->ns_ + "/vtol_0001/aerodynamics/ail")) {
-    this->nodeHandle_->getParam(this->ns_ + "/vtol_0001/aerodynamics/ail", dummy);
-    ail_ = Eigen::VectorXd::Zero(dummy.size());
-    for(int i = 0 ; i<dummy.size();i++){
-        ail_(i) = dummy[i];
-    }
-  }
-  else {
-    ROS_INFO("The ail couldn't be found");
-  }
-
-  if (this->nodeHandle_->hasParam(this->ns_ + "/vtol_0001/aerodynamics/alpha_wake")) {
-    this->nodeHandle_->getParam(this->ns_ + "/vtol_0001/aerodynamics/alpha_wake", dummy );
-    alpha_wake_ = Eigen::VectorXd::Zero(dummy.size());
-    for(int i = 0 ; i<dummy.size();i++){
-        alpha_wake_(i) = dummy[i];
-    }
-  }
-  else {
-    ROS_INFO("The alpha_wake couldn't be found");
-  }
-
-  if (this->nodeHandle_->hasParam(this->ns_ + "/vtol_0001/aerodynamics/alpha")) {
-    this->nodeHandle_->getParam(this->ns_ + "/vtol_0001/aerodynamics/alpha", dummy);
-    alpha_ = Eigen::VectorXd::Zero(dummy.size());
-    for(int i = 0 ; i<dummy.size();i++){
-        alpha_(i) = dummy[i];
-    }
-  }
-  else {
-    ROS_INFO("The alpha couldn't be found");
-  }
-
-  if (this->nodeHandle_->hasParam(this->ns_ + "/vtol_0001/aerodynamics/alphalim_wake")) {
-    this->nodeHandle_->getParam(this->ns_ + "/vtol_0001/aerodynamics/alphalim_wake", dummy);
-    alphalim_wake_ = Eigen::VectorXd::Zero(dummy.size());
-    for(int i = 0 ; i<dummy.size();i++){
-        alphalim_wake_(i) = dummy[i];
-    }
-  }
-  else {
-    ROS_INFO("The alphalim_wake couldn't be found");
-  }
-
-  if (this->nodeHandle_->hasParam(this->ns_ + "/vtol_0001/aerodynamics/alphalim")) {
-    this->nodeHandle_->getParam(this->ns_ + "/vtol_0001/aerodynamics/alphalim", dummy);
-    alphalim_ = Eigen::VectorXd::Zero(dummy.size());
-    for(int i = 0 ; i<dummy.size();i++){
-        alphalim_(i) = dummy[i];
-    }
-  }
-  else {
-    ROS_INFO("The alphalim couldn't be found");
-  }
-
-  if (this->nodeHandle_->hasParam(this->ns_ + "/vtol_0001/aerodynamics/cd_alpha_elv")) {
-    this->nodeHandle_->getParam(this->ns_ + "/vtol_0001/aerodynamics/cd_alpha_elv_row_number", row);
-    this->nodeHandle_->getParam(this->ns_ + "/vtol_0001/aerodynamics/cd_alpha_elv", dummy);
-    col = dummy.size()/row;
-    cd_alpha_elv_ = Eigen::MatrixXd::Zero(row,col);
-    for(int i = 0 ; i<dummy.size();i++){
-        cd_alpha_elv_(i/col,i%col) = dummy[i];
-    }
-  }
-  else {
-    ROS_INFO("The cd_alpha_elv_ couldn't be found");
-  }
-
-  if (this->nodeHandle_->hasParam(this->ns_ + "/vtol_0001/aerodynamics/cd_alpha_wake")) {
-    this->nodeHandle_->getParam(this->ns_ + "/vtol_0001/aerodynamics/cd_alpha_wake", dummy);
-    cd_alpha_wake_ = Eigen::VectorXd::Zero(dummy.size());
-    for(int i = 0 ; i<dummy.size();i++){
-        cd_alpha_wake_(i) = dummy[i];
-    }
-  }
-  else {
-    ROS_INFO("The cd_alpha_wake couldn't be found");
-  }
-
-  if (this->nodeHandle_->hasParam(this->ns_ + "/vtol_0001/aerodynamics/cd_alpha")) {
-    this->nodeHandle_->getParam(this->ns_ + "/vtol_0001/aerodynamics/cd_alpha", dummy);
-    cd_alpha_ = Eigen::VectorXd::Zero(dummy.size());
-    for(int i = 0 ; i<dummy.size();i++){
-        cd_alpha_(i) = dummy[i];
-    }
-  }
-  else {
-    ROS_INFO("The cd_alpha couldn't be found");
-  }
-
-  if (this->nodeHandle_->hasParam(this->ns_ + "/vtol_0001/aerodynamics/cl_ail")) {
-    this->nodeHandle_->getParam(this->ns_ + "/vtol_0001/aerodynamics/cl_ail", dummy);
-    cl_ail_ = Eigen::VectorXd::Zero(dummy.size());
-    for(int i = 0 ; i<dummy.size();i++){
-        cl_ail_(i) = dummy[i];
-    }
-  }
-  else {
-    ROS_INFO("The cl_ail couldn't be found");
-  }
-
-  if (this->nodeHandle_->hasParam(this->ns_ + "/vtol_0001/aerodynamics/cl_alpha_wake")) {
-    this->nodeHandle_->getParam(this->ns_ + "/vtol_0001/aerodynamics/cl_alpha_wake", dummy);
-    cl_alpha_wake_ = Eigen::VectorXd::Zero(dummy.size());
-    for(int i = 0 ; i<dummy.size();i++){
-        cl_alpha_wake_(i) = dummy[i];
-    }
-  }
-  else {
-    ROS_INFO("The cl_alpha_wake couldn't be found");
-  }
-
-  if (this->nodeHandle_->hasParam(this->ns_ + "/vtol_0001/aerodynamics/cl_alpha")) {
-    this->nodeHandle_->getParam(this->ns_ + "/vtol_0001/aerodynamics/cl_alpha", dummy);
-    cl_alpha_ = Eigen::VectorXd::Zero(dummy.size());
-    for(int i = 0 ; i<dummy.size();i++){
-        cl_alpha_(i) = dummy[i];
-    }
-  }
-  else {
-    ROS_INFO("The cl_alpha couldn't be found");
-  }
-
-  if (this->nodeHandle_->hasParam(this->ns_ + "/vtol_0001/aerodynamics/cl_beta")) {
-    this->nodeHandle_->getParam(this->ns_ + "/vtol_0001/aerodynamics/cl_beta", dummy);
-    cl_beta_ = Eigen::VectorXd::Zero(dummy.size());
-    for(int i = 0 ; i<dummy.size();i++){
-        cl_beta_(i) = dummy[i];
-    }
-  }
-  else {
-    ROS_INFO("The cl_beta couldn't be found");
-  }
-
-  if (this->nodeHandle_->hasParam(this->ns_ + "/vtol_0001/aerodynamics/cl_elv")) {
-    this->nodeHandle_->getParam(this->ns_ + "/vtol_0001/aerodynamics/cl_elv", dummy);
-    cl_elv_ = Eigen::VectorXd::Zero(dummy.size());
-    for(int i = 0 ; i<dummy.size();i++){
-        cl_elv_(i) = dummy[i];
-    }
-  }
-  else {
-    ROS_INFO("The cl_elv couldn't be found");
-  }
-
-  if (this->nodeHandle_->hasParam(this->ns_ + "/vtol_0001/aerodynamics/cl_p")) {
-    this->nodeHandle_->getParam(this->ns_ + "/vtol_0001/aerodynamics/cl_p", dummy);
-    cl_p_ = Eigen::VectorXd::Zero(dummy.size());
-    for(int i = 0 ; i<dummy.size();i++){
-        cl_p_(i) = dummy[i];
-    }
-  }
-  else {
-    ROS_INFO("The cl_p couldn't be found");
-  }
-
-  if (this->nodeHandle_->hasParam(this->ns_ + "/vtol_0001/aerodynamics/cl_r")) {
-    this->nodeHandle_->getParam(this->ns_ + "/vtol_0001/aerodynamics/cl_r", dummy);
-    cl_r_ = Eigen::VectorXd::Zero(dummy.size());
-    for(int i = 0 ; i<dummy.size();i++){
-        cl_r_(i) = dummy[i];
-    }
-  }
-  else {
-    ROS_INFO("The cl_r couldn't be found");
-  }
-
-  if (this->nodeHandle_->hasParam(this->ns_ + "/vtol_0001/aerodynamics/cm_alpha_wake")) {
-    this->nodeHandle_->getParam(this->ns_ + "/vtol_0001/aerodynamics/cm_alpha_wake", dummy);
-    cm_alpha_wake_ = Eigen::VectorXd::Zero(dummy.size());
-    for(int i = 0 ; i<dummy.size();i++){
-        cm_alpha_wake_(i) = dummy[i];
-    }
-  }
-  else {
-    ROS_INFO("The cm_alpha_wake couldn't be found");
-  }
-
-  if (this->nodeHandle_->hasParam(this->ns_ + "/vtol_0001/aerodynamics/cm_alpha")) {
-    this->nodeHandle_->getParam(this->ns_ + "/vtol_0001/aerodynamics/cm_alpha", dummy);
-    cm_alpha_ = Eigen::VectorXd::Zero(dummy.size());
-    for(int i = 0 ; i<dummy.size();i++){
-        cm_alpha_(i) = dummy[i];
-    }
-  }
-  else {
-    ROS_INFO("The cm_alpha couldn't be found");
-  }
-
-  if (this->nodeHandle_->hasParam(this->ns_ + "/vtol_0001/aerodynamics/cm_elv")) {
-    this->nodeHandle_->getParam(this->ns_ + "/vtol_0001/aerodynamics/cm_elv", dummy);
-    cm_elv_ = Eigen::VectorXd::Zero(dummy.size());
-    for(int i = 0 ; i<dummy.size();i++){
-        cm_elv_(i) = dummy[i];
-    }
-  }
-  else {
-    ROS_INFO("The cm_elv couldn't be found");
-  }
-
-  if (this->nodeHandle_->hasParam(this->ns_ + "/vtol_0001/aerodynamics/cn_ail")) {
-      this->nodeHandle_->getParam(this->ns_ + "/vtol_0001/aerodynamics/cn_ail_row_number", row);
-    this->nodeHandle_->getParam(this->ns_ + "/vtol_0001/aerodynamics/cn_ail", dummy);
-    col = dummy.size()/row;
-    cn_ail_ = Eigen::MatrixXd::Zero(row,col);
-    for(int i = 0 ; i<dummy.size();i++){
-        cn_ail_(i/col,i%col) = dummy[i];
-    }
-  }
-  else {
-    ROS_INFO("The cn_ail couldn't be found");
-  }
-
-  if (this->nodeHandle_->hasParam(this->ns_ + "/vtol_0001/aerodynamics/cn_beta")) {
-    this->nodeHandle_->getParam(this->ns_ + "/vtol_0001/aerodynamics/cn_beta", dummy);
-    cn_beta_ = Eigen::VectorXd::Zero(dummy.size());
-    for(int i = 0 ; i<dummy.size();i++){
-        cn_beta_(i) = dummy[i];
-    }
-  }
-  else {
-    ROS_INFO("The cn_beta couldn't be found");
-  }
-
-  if (this->nodeHandle_->hasParam(this->ns_ + "/vtol_0001/aerodynamics/cn_p")) {
-    this->nodeHandle_->getParam(this->ns_ + "/vtol_0001/aerodynamics/cn_p", dummy);
-    cn_p_ = Eigen::VectorXd::Zero(dummy.size());
-    for(int i = 0 ; i<dummy.size();i++){
-        cn_p_(i) = dummy[i];
-    }
-  }
-  else {
-    ROS_INFO("The cn_p couldn't be found");
-  }
-
-  if (this->nodeHandle_->hasParam(this->ns_ + "/vtol_0001/aerodynamics/cn_r")) {
-    this->nodeHandle_->getParam(this->ns_ + "/vtol_0001/aerodynamics/cn_r", dummy);
-    cn_r_ = Eigen::VectorXd::Zero(dummy.size());
-    for(int i = 0 ; i<dummy.size();i++){
-        cn_r_(i) = dummy[i];
-    }
-  }
-  else {
-    ROS_INFO("The cn_r couldn't be found");
-  }
-
-  if (this->nodeHandle_->hasParam(this->ns_ + "/vtol_0001/aerodynamics/cy_p")) {
-    this->nodeHandle_->getParam(this->ns_ + "/vtol_0001/aerodynamics/cy_p", dummy );
-    cy_p_ = Eigen::VectorXd::Zero(dummy.size());
-    for(int i = 0 ; i<dummy.size();i++){
-        cy_p_(i) = dummy[i];
-    }
-  }
-  else {
-    ROS_INFO("The cy_p couldn't be found");
-  }
-
-  if (this->nodeHandle_->hasParam(this->ns_ + "/vtol_0001/aerodynamics/ele")) {
-    this->nodeHandle_->getParam(this->ns_ + "/vtol_0001/aerodynamics/ele", dummy);
-    ele_ = Eigen::VectorXd::Zero(dummy.size());
-    for(int i = 0 ; i<dummy.size();i++){
-        ele_(i) = dummy[i];
-    }
-  }
-  else {
-    ROS_INFO("The ele couldn't be found");
-  }
-
-  if (this->nodeHandle_->hasParam(this->ns_ + "/vtol_0001/aerodynamics/elelim")) {
-    this->nodeHandle_->getParam(this->ns_ + "/vtol_0001/aerodynamics/elelim", dummy);
-    elelim_ = Eigen::VectorXd::Zero(dummy.size());
-    for(int i = 0 ; i<dummy.size();i++){
-        elelim_(i) = dummy[i];
-    }
-  }
-  else {
-    ROS_INFO("The elelim couldn't be found");
-  }
-  /*
-  std::cout << "ail_\n" << ail_.transpose() << std::endl ;
-  std::cout << "alpha_wake_\n" << alpha_wake_.transpose() << std::endl ;
-  std::cout << "alpha_\n" << alpha_.transpose() << std::endl ;
-  std::cout << "alphalim_wake_\n" << alphalim_wake_.transpose() << std::endl ;
-  std::cout << "alphalim_\n" << alphalim_.transpose() << std::endl ;
-  std::cout << "cd_alpha_elv_\n" << cd_alpha_elv_ << std::endl ;
-  std::cout << "cd_alpha_wake_\n" << cd_alpha_wake_.transpose() << std::endl ;
-  std::cout << "cd_alpha_\n" << cd_alpha_.transpose() << std::endl ;
-  std::cout << "cl_ail_\n" << cl_ail_.transpose() << std::endl ;
-  std::cout << "cl_alpha_wake_\n" << cl_alpha_wake_.transpose() << std::endl ;
-  std::cout << "cl_alpha_\n" << cl_alpha_.transpose() << std::endl ;
-  std::cout << "cl_beta_\n" << cl_beta_.transpose() << std::endl ;
-  std::cout << "cl_elv_\n" << cl_elv_.transpose() << std::endl ;
-  std::cout << "cl_p_\n" << cl_p_.transpose() << std::endl ;
-  std::cout << "cl_r_\n" << cl_r_.transpose() << std::endl ;
-  std::cout << "cm_alpha_wake_\n" << cm_alpha_wake_.transpose() << std::endl ;
-  std::cout << "cm_alpha_\n" << cm_alpha_.transpose() << std::endl ;
-  std::cout << "cm_elv_\n" << cm_elv_.transpose() << std::endl ;
-  std::cout << "cn_ail_\n" << cn_ail_ << std::endl ;
-  std::cout << "cn_beta_\n" << cn_beta_.transpose() << std::endl ;
-  std::cout << "cn_p_\n" << cn_p_.transpose() << std::endl ;
-  std::cout << "cn_r_\n" << cn_r_.transpose() << std::endl ;
-  std::cout << "cy_p_\n" << cy_p_.transpose() << std::endl ;
-  std::cout << "ele_\n" << ele_.transpose() << std::endl ;
-  std::cout << "elelim_\n" << elelim_.transpose() << std::endl ;
-  */
+  aerodynamics_.readParameters();
 }
 
 // INITILIZATION
@@ -377,30 +87,26 @@ void VtolBaseGazeboPlugin::initLinkStructure()
 {
   std::lock_guard<std::mutex> lock(this->mutex_);
   link_ = model_->GetLink(linkName_);
-  if (link_ == NULL){
-    std::cout<<" Couldn't find the link : " << linkName_ << std::endl;
+  if (link_ == NULL) {
+    std::cout << " Couldn't find the link : " << linkName_ << std::endl;
   }
 }
 
 void VtolBaseGazeboPlugin::initSubscribers()
 {
   std::lock_guard<std::mutex> lock(this->mutex_);
-  aileronRightSubscriber_ = nodeHandle_->subscribe("/"+robotName_+"/AR/command",
-                                            10,
-                                            &VtolBaseGazeboPlugin::AileronRightCommandsCallback,
-                                            this);
-  aileronLeftSubscriber_= nodeHandle_->subscribe("/"+robotName_+"/AL/command",
-                                            10,
-                                            &VtolBaseGazeboPlugin::AileronLeftCommandsCallback,
-                                            this);
-  elevatorRightSubscriber_= nodeHandle_->subscribe("/"+robotName_+"/ER/command",
-                                            10,
-                                            &VtolBaseGazeboPlugin::ElevatorRightCommandsCallback,
-                                            this);
-  elevatorLeftSubscriber_ = nodeHandle_->subscribe("/"+robotName_+"/EL/command",
-                                            10,
-                                            &VtolBaseGazeboPlugin::ElevatorLeftCommandsCallback,
-                                            this);
+  aileronRightSubscriber_ = nodeHandle_->subscribe(
+      "/" + robotName_ + "/AR/command", 10, &VtolBaseGazeboPlugin::AileronRightCommandsCallback,
+      this);
+  aileronLeftSubscriber_ = nodeHandle_->subscribe(
+      "/" + robotName_ + "/AL/command", 10, &VtolBaseGazeboPlugin::AileronLeftCommandsCallback,
+      this);
+  elevatorRightSubscriber_ = nodeHandle_->subscribe(
+      "/" + robotName_ + "/ER/command", 10, &VtolBaseGazeboPlugin::ElevatorRightCommandsCallback,
+      this);
+  elevatorLeftSubscriber_ = nodeHandle_->subscribe(
+      "/" + robotName_ + "/EL/command", 10, &VtolBaseGazeboPlugin::ElevatorLeftCommandsCallback,
+      this);
 }
 
 void VtolBaseGazeboPlugin::initPublishers()
@@ -425,33 +131,47 @@ void VtolBaseGazeboPlugin::writeSimulation()
   calculateAerodynamics();
 
   // Add Forces and Moment on the Body
-  link_->AddRelativeForce(math::Vector3( forceOnBodyInWorldFrame_[0]
-                                       , forceOnBodyInWorldFrame_[1]
-                                       , forceOnBodyInWorldFrame_[2]));
-  link_->AddRelativeTorque(math::Vector3( torqueOnBodyInWorldFrame_[0]
-                                      , torqueOnBodyInWorldFrame_[1]
-                                      , torqueOnBodyInWorldFrame_[2]));
+  link_->AddRelativeForce(
+      math::Vector3(forceOnBodyInWorldFrame_[0], forceOnBodyInWorldFrame_[1],
+                    forceOnBodyInWorldFrame_[2]));
+  link_->AddRelativeTorque(
+      math::Vector3(torqueOnBodyInWorldFrame_[0], torqueOnBodyInWorldFrame_[1],
+                    torqueOnBodyInWorldFrame_[2]));
 
 }
 
 void VtolBaseGazeboPlugin::readSimulation()
 {
   std::lock_guard<std::mutex> lock(this->mutex_);
-  positionWorldToBase_ << link_->GetWorldPose().pos.x
-                        , link_->GetWorldPose().pos.y
-                        , link_->GetWorldPose().pos.z ;
-  orientationWorldToBase_ << link_->GetWorldPose().rot.x
-                           , link_->GetWorldPose().rot.y
-                           , link_->GetWorldPose().rot.z
-                           , link_->GetWorldPose().rot.w;
+  positionWorldToBase_ << link_->GetWorldPose().pos.x, link_->GetWorldPose().pos.y, link_
+      ->GetWorldPose().pos.z;
+  orientationWorldToBase_ << link_->GetWorldPose().rot.x, link_->GetWorldPose().rot.y, link_
+      ->GetWorldPose().rot.z, link_->GetWorldPose().rot.w;
 
-  linearVelocityWorldToBase_ << link_->GetWorldAngularVel().x
-                             , link_->GetWorldAngularVel().y
-                             , link_->GetWorldAngularVel().z;
-  angularVelocityWorldToBase_ << link_->GetWorldLinearVel().x
-                             , link_->GetWorldLinearVel().y
-                             , link_->GetWorldLinearVel().z;
+  linearVelocityWorldToBase_ << link_->GetWorldAngularVel().x, link_->GetWorldAngularVel().y, link_
+      ->GetWorldAngularVel().z;
+  angularVelocityWorldToBase_ << link_->GetWorldLinearVel().x, link_->GetWorldLinearVel().y, link_
+      ->GetWorldLinearVel().z;
 
+}
+
+// PUBLISHING METHODS
+void VtolBaseGazeboPlugin::publishTF()
+{
+  std::lock_guard<std::mutex> lock(this->mutex_);
+  static tf::TransformBroadcaster br;
+
+  T_WB_.setOrigin(
+      tf::Vector3(positionWorldToBase_[0], positionWorldToBase_[1], positionWorldToBase_[2]));
+  tf::Quaternion q = tf::Quaternion(orientationWorldToBase_[0], orientationWorldToBase_[1],
+                                    orientationWorldToBase_[2], orientationWorldToBase_[3]);
+  T_WB_.setRotation(q);
+  br.sendTransform(tf::StampedTransform(T_WB_, ros::Time::now(), "odom", linkName_));
+
+}
+
+void VtolBaseGazeboPlugin::publish()
+{
 
 }
 
@@ -459,47 +179,86 @@ void VtolBaseGazeboPlugin::readSimulation()
 void VtolBaseGazeboPlugin::calculateAerodynamics()
 {
   /*
-    The orientation, position, linear velocities and angular velocities
-    are read from the simulation.
-    The aileron and elevator angles are also known from subscriber
-  */
+   The orientation, position, linear velocities and angular velocities
+   are read from the simulation.
+   The aileron and elevator angles are also known from subscriber
+   */
+  // XXX : comment in this section for debug purposes
   /*
-  std::cout<< "Position     : " << positionWorldToBase_.transpose()<< std::endl;
-  std::cout<< "Orientaiton  : " << orientationWorldToBase_.transpose()<< std::endl;
-  std::cout<< "Lin Velocity : " << linearVelocityWorldToBase_.transpose()<< std::endl;
-  std::cout<< "Ang Velocity : " << angularVelocityWorldToBase_.transpose()<< std::endl;
+   std::cout<< "Position     : " << positionWorldToBase_.transpose()<< std::endl;
+   std::cout<< "Orientaiton  : " << orientationWorldToBase_.transpose()<< std::endl;
+   std::cout<< "Lin Velocity : " << linearVelocityWorldToBase_.transpose()<< std::endl;
+   std::cout<< "Ang Velocity : " << angularVelocityWorldToBase_.transpose()<< std::endl;
 
 
-  std::cout<< "Angle Aileron Right  : " << angleAileronRight_<< std::endl;
-  std::cout<< "Angle Aileron Left   : " << angleAileronLeft_<< std::endl;
-  std::cout<< "Angle Elevator Right : " << angleElevatorRight_<< std::endl;
-  std::cout<< "Angle Elevator Left  : " << angleElevatorLeft_<< std::endl;
-  //*/
+   std::cout<< "Angle Aileron Right  : " << angleAileronRight_<< std::endl;
+   std::cout<< "Angle Aileron Left   : " << angleAileronLeft_<< std::endl;
+   std::cout<< "Angle Elevator Right : " << angleElevatorRight_<< std::endl;
+   std::cout<< "Angle Elevator Left  : " << angleElevatorLeft_<< std::endl;
+   //*/
+
+  // Todo : Calculate euler angles in rad from orientation
+  // eulerAngles_ = ;
+  // velocity of the base
+  velocity_ = linearVelocityWorldToBase_.norm();
+
+  // TODO Mehmet Efe Tiryaki 14.11.2018 : Calcualte VelocityEffective
+  // radius of the region affected by propeller wake flow Rs
+  // Area of that region As, qbar wake
+
+  // TODO: Calculate propeller related variables
+  //double S_wake = 0;
+
+  // Calculate angle of attack and sideslip angle
+  calculateAngleOfAttack();
+  calculateSideSlip();
+
+  // Athosphere values
+  rho_ = 1.225;
+  qbar_ = 0.5 * rho_ * velocity_ * velocity_;
+  qbar_wake_ = 0.5 * rho_ * velocityEffective_ * velocityEffective_;
+
+  // This method updates Aerodynamic coefficients
+  aerodynamics_.updateAerodyamics(angleOfAttack_, angleOfAttackDot_, angleOfAttackEffective_,
+                                  sideSlipAngle_, angularVelocityWorldToBase_[0],
+                                  angularVelocityWorldToBase_[1], angularVelocityWorldToBase_[2],
+                                  angleElevatorRight_, angleAileronRight_, velocity_,
+                                  velocityEffective_);
+  // Forces and Moment are calculated as 3D vectors
+  F_wake0_ = aerodynamics_.getCFWake0() * qbar_ * S_wake_ / mass_;
+  M_wake0_ = aerodynamics_.getCMWake0().cwiseProduct(aerodynamics_.getBWake()) * qbar_ * S_wake_;
+
+  F_free_ = aerodynamics_.getCFWake0() * qbar_ * S_wake_ / mass_ - F_wake0_;
+  M_free_ = aerodynamics_.getCMWake0().cwiseProduct(aerodynamics_.getB()) * qbar_ * S_wake_
+      - M_wake0_;
+
+  F_wake_ = aerodynamics_.getCFWake() * qbar_wake_ * S_wake_ / mass_;
+  M_wake_ = aerodynamics_.getCMWake().cwiseProduct(aerodynamics_.getBWake()) * qbar_wake_ * S_wake_;
+
+  // Final moments in Body Frame
+  Eigen::Vector3d forceOnBodyInBodyFrame = F_free_ + F_wake_;
+  Eigen::Vector3d momentOnBodyInBodyFrame = M_free_ + M_wake_;
 }
 
-
-// PUBLISHING METHODS
-void VtolBaseGazeboPlugin::publishTF()
+Propeller VtolBaseGazeboPlugin::propellerParameterCalculate(double Throttle, double vt,
+                                                            double tilt_angle,
+                                                            double tilt_angle_rad, double alphar,
+                                                            double betar, double rho)
 {
-  std::lock_guard<std::mutex> lock(this->mutex_);
-  static tf::TransformBroadcaster br;
-  tf::Transform transform;
-
-  transform.setOrigin( tf::Vector3( positionWorldToBase_[0]
-                                  , positionWorldToBase_[1]
-                                  , positionWorldToBase_[2]));
-  tf::Quaternion q = tf::Quaternion( orientationWorldToBase_[0]
-                                   , orientationWorldToBase_[1]
-                                   , orientationWorldToBase_[2]
-                                   , orientationWorldToBase_[3]);
-  transform.setRotation(q);
-  br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "odom", linkName_));
-
-
+  // TODO : calculate propeller parameters here
+  return Propeller();
 }
 
-void VtolBaseGazeboPlugin::publish()
+//
+
+void VtolBaseGazeboPlugin::calculateAngleOfAttack()
 {
+  // TODO Mehmet Efe Tiryaki 14.11.2018 : calculate angle of attack here
+
+}
+void VtolBaseGazeboPlugin::calculateSideSlip()
+{
+  // TODO Mehmet Efe Tiryaki 14.11.2018 : calculate sideslip here
 
 }
 
