@@ -172,6 +172,8 @@ void VtolBaseGazeboPlugin::publishTF()
 
 void VtolBaseGazeboPlugin::publish()
 {
+  // TODO Mehmet Efe Tiryaki 14.11.2018 : Publish force and moment markers for
+  // RViz
 
 }
 
@@ -197,7 +199,7 @@ void VtolBaseGazeboPlugin::calculateAerodynamics()
    std::cout<< "Angle Elevator Left  : " << angleElevatorLeft_<< std::endl;
    //*/
 
-  // Todo : Calculate euler angles in rad from orientation
+  // Todo Mehmet Efe Tiryaki 14.11.2018 : Calculate euler angles in rad from orientation
   // eulerAngles_ = ;
   // velocity of the base
   velocity_ = linearVelocityWorldToBase_.norm();
