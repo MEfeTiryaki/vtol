@@ -9,7 +9,6 @@
 #include "vtol_gazebo/VtolBaseGazeboPlugin.hpp"
 namespace gazebo {
 
-// Todo : check if we can add gopigo name here
 VtolBaseGazeboPlugin::VtolBaseGazeboPlugin()
     : nodeHandle_(),
       debug_(false),
