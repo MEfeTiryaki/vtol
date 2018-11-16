@@ -23,7 +23,6 @@ VtolBaseGazeboPlugin::VtolBaseGazeboPlugin()
       qbar_wake_(0.0),
       rho_(0.0),
       S_wake_(0.0),
-      mass_(1.0),
       velocity_(0.0),
       velocityEffective_(0.0),
       angleOfAttack_(0.0),
@@ -39,6 +38,10 @@ void VtolBaseGazeboPlugin::Load(physics::ModelPtr model, sdf::ElementPtr sdf)
 
   nodeHandle_ = new ros::NodeHandle("~");
 
+  // TODO Mehmet Efe Tiryaki 16.11.2018 : implement Create method
+  aerodynamics_ = VtolAerodynamicContainer();
+  aerodynamics_.initilize(nodeHandle_);
+
   // Note : check if this is placed correctly
   this->readParameters(sdf);
 
@@ -52,7 +55,6 @@ void VtolBaseGazeboPlugin::Load(physics::ModelPtr model, sdf::ElementPtr sdf)
   initSubscribers();
   initPublishers();
 
-  aerodynamics_.initilize(nodeHandle_);
   // reset simulation variables
   Reset();
 
@@ -78,6 +80,7 @@ void VtolBaseGazeboPlugin::readParameters(sdf::ElementPtr sdf)
 
   // READ PARAMETERS
   aerodynamics_.readParameters();
+  std::cout << "Parameters are read !! " << std::endl;
 }
 
 // INITILIZATION
@@ -147,9 +150,15 @@ void VtolBaseGazeboPlugin::readSimulation()
   orientationWorldToBase_ << link_->GetWorldPose().rot.x, link_->GetWorldPose().rot.y, link_
       ->GetWorldPose().rot.z, link_->GetWorldPose().rot.w;
 
-  linearVelocityWorldToBase_ << link_->GetWorldAngularVel().x, link_->GetWorldAngularVel().y, link_
+  T_WB_.setOrigin(
+      tf::Vector3(positionWorldToBase_[0], positionWorldToBase_[1], positionWorldToBase_[2]));
+  tf::Quaternion q = tf::Quaternion(orientationWorldToBase_[0], orientationWorldToBase_[1],
+                                    orientationWorldToBase_[2], orientationWorldToBase_[3]);
+  T_WB_.setRotation(q);
+
+  angularVelocityWorldToBase_ << link_->GetWorldAngularVel().x, link_->GetWorldAngularVel().y, link_
       ->GetWorldAngularVel().z;
-  angularVelocityWorldToBase_ << link_->GetWorldLinearVel().x, link_->GetWorldLinearVel().y, link_
+  linearVelocityWorldToBase_ << link_->GetWorldLinearVel().x, link_->GetWorldLinearVel().y, link_
       ->GetWorldLinearVel().z;
 
 }
@@ -159,12 +168,6 @@ void VtolBaseGazeboPlugin::publishTF()
 {
   std::lock_guard<std::mutex> lock(this->mutex_);
   static tf::TransformBroadcaster br;
-
-  T_WB_.setOrigin(
-      tf::Vector3(positionWorldToBase_[0], positionWorldToBase_[1], positionWorldToBase_[2]));
-  tf::Quaternion q = tf::Quaternion(orientationWorldToBase_[0], orientationWorldToBase_[1],
-                                    orientationWorldToBase_[2], orientationWorldToBase_[3]);
-  T_WB_.setRotation(q);
   br.sendTransform(tf::StampedTransform(T_WB_, ros::Time::now(), "odom", linkName_));
 
 }
@@ -211,9 +214,7 @@ void VtolBaseGazeboPlugin::calculateAerodynamics()
   //double S_wake = 0;
 
   // Calculate angle of attack and sideslip angle
-  calculateAngleOfAttack();
-  calculateSideSlip();
-
+  calculateAngles();
   // Athosphere values
   rho_ = 1.225;
   qbar_ = 0.5 * rho_ * velocity_ * velocity_;
@@ -252,15 +253,59 @@ Propeller VtolBaseGazeboPlugin::propellerParameterCalculate(double Throttle, dou
 
 //
 
-void VtolBaseGazeboPlugin::calculateAngleOfAttack()
+void VtolBaseGazeboPlugin::calculateAngles()
 {
-  // TODO Mehmet Efe Tiryaki 14.11.2018 : calculate angle of attack here
+  // TODO Mehmet Efe Tiryaki 16.11.2018 : Check conventions
+  // XXX Mehmet Efe Tiryaki 16.11.2018 : This code assumes that the heading of the plane plane is in same
+  // direction with heading of the wings
 
-}
-void VtolBaseGazeboPlugin::calculateSideSlip()
-{
-  // TODO Mehmet Efe Tiryaki 14.11.2018 : calculate sideslip here
+  // Unit direction vectors according to Aerospace conventions
+  // Todo Mehmet Efe Tiryaki 16.11.2018 : Check Why rotation of a unit vector is not
+  // a unit vector
+  tf::Vector3 heading = (T_WB_ * tf::Vector3(1.0, 0.0, 0.0)).normalized();
+  tf::Vector3 rightWing = (T_WB_ * tf::Vector3(0.0, -1.0, 0.0)).normalized();
+  tf::Vector3 zDirection = (T_WB_ * tf::Vector3(0.0, 0.0, -1.0)).normalized();
+  tf::Vector3 rightWingPlaneNormal = rightWing.cross(zDirection).normalize();
 
+  tf::Vector3 velocity = tf::Vector3(linearVelocityWorldToBase_[0], linearVelocityWorldToBase_[1],
+                                     linearVelocityWorldToBase_[2]);
+
+  // Right wing vector is the normal of the plane containing heading and z-direction
+  tf::Vector3 velocityOnHeadingPlane = velocity - velocity.dot(rightWing) * rightWing;
+
+  // Heading vector is not necessarily normal of the Right wing plane
+  tf::Vector3 velocityOnRightWingPlane = velocity
+      - velocity.dot(rightWingPlaneNormal) * rightWingPlaneNormal;
+
+  // a.b = |a|*|b|*cos(theta) and
+  if (velocity.length() != 0) {
+    angleOfAttack_ = asin((velocityOnHeadingPlane.normalized().cross(heading)).length());
+    sideSlipAngle_ = asin(velocityOnRightWingPlane.normalized().cross(rightWing).length());
+  } else {
+    // if velocity is zero then velocity vector is in heading direction of the plane
+    angleOfAttack_ = asin(
+        ((T_WB_ * tf::Vector3(1.0, 0.0, 0.0)).normalized().cross(heading)).length());
+    sideSlipAngle_ = 0.0;
+  }
+  // Debug
+  std::cout << "velocity :" << velocity.length() << std::endl;
+  std::cout << "velocity :" << velocity.getX() << " , " << velocity.getY() << " , "
+            << velocity.getZ() << " , " << std::endl;
+  std::cout << "velocityOnHeadingPlane :" << velocityOnHeadingPlane.getX() << " , "
+            << velocityOnHeadingPlane.getY() << " , " << velocityOnHeadingPlane.getZ() << " , "
+            << std::endl;
+  std::cout << "velocityOnRightWingPlane :" << velocityOnRightWingPlane.getX() << " , "
+            << velocityOnRightWingPlane.getY() << " , " << velocityOnRightWingPlane.getZ() << " , "
+            << std::endl;
+  std::cout << "heading :" << heading.getX() << " , " << heading.getY() << " , " << heading.getZ()
+            << " , " << std::endl;
+  std::cout << "rightWing :" << rightWing.getX() << " , " << rightWing.getY() << " , "
+            << rightWing.getZ() << " , " << std::endl;
+  std::cout << "zDirection :" << zDirection.getX() << " , " << zDirection.getY() << " , "
+            << zDirection.getZ() << " , " << std::endl;
+  std::cout << "Angle of attack :" << angleOfAttack_ << std::endl;
+  std::cout << "Sideslip angle :" << sideSlipAngle_ << std::endl;
+  std::cout << " _________________________" << std::endl;
 }
 
 // CALLBACKS

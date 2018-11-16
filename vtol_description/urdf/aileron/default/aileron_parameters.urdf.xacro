@@ -15,7 +15,7 @@
 
   <xacro:property name="x_aileron"   value= "-0.345"/> <!-- [m] -->
   <xacro:property name="y_aileron"   value= "0.59"/> <!-- [m] -->
-  <xacro:property name="z_aileron"   value= "0.05"/> <!-- [m] -->
+  <xacro:property name="z_aileron"   value= "-0.01"/> <!-- [m] -->
   <xacro:property name="yaw_aileron" value= "${PI*2/3-0.09}"/> <!-- [m] -->
 
 

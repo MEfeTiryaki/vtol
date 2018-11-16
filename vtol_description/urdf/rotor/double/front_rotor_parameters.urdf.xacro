@@ -22,7 +22,7 @@
 
   <xacro:property name="x_rotor"   value= "0.15"/> <!-- [m] -->
   <xacro:property name="y_rotor"   value= "0.25"/> <!-- [m] -->
-  <xacro:property name="z_rotor"   value= "0.1"/> <!-- [m] -->
+  <xacro:property name="z_rotor"   value= "0.05"/> <!-- [m] -->
 
   <xacro:property name="r_blade"   value= "0.1"/> <!-- [m] -->
   <xacro:property name="w_blade"   value= "0.02"/> <!-- [m] -->

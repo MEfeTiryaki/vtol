@@ -131,11 +131,9 @@ class VtolBaseGazeboPlugin : public ModelPlugin
   // data from simulation
   virtual void calculateAerodynamics();
 
-  // Calculates Angle of Attack
-  void calculateAngleOfAttack();
+  // Calculates Angle of Attack and  Sideslip Angle
+  void calculateAngles();
 
-  // Calculates Sideslip Angle
-  void calculateSideSlip();
 
   virtual Propeller propellerParameterCalculate(double Throttle, double vt, double tilt_angle,
                                                 double tilt_angle_rad, double alphar, double betar,

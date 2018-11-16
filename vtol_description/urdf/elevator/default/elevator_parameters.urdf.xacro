@@ -15,7 +15,7 @@
 
   <xacro:property name="x_elevator"   value= "-0.25"/> <!-- [m] -->
   <xacro:property name="y_elevator"   value= "0.38"/> <!-- [m] -->
-  <xacro:property name="z_elevator"   value= "0.05"/> <!-- [m] -->
+  <xacro:property name="z_elevator"   value= "-0.01"/> <!-- [m] -->
   <xacro:property name="yaw_elevator" value= "${PI*2/3-0.09}"/> <!-- [m] -->
 
 
