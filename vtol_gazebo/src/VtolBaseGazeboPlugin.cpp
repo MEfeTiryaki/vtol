@@ -215,6 +215,7 @@ void VtolBaseGazeboPlugin::calculateAerodynamics()
 
   // Calculate angle of attack and sideslip angle
   calculateAngles();
+
   // Athosphere values
   rho_ = 1.225;
   qbar_ = 0.5 * rho_ * velocity_ * velocity_;
@@ -226,6 +227,7 @@ void VtolBaseGazeboPlugin::calculateAerodynamics()
                                   angularVelocityWorldToBase_[1], angularVelocityWorldToBase_[2],
                                   angleElevatorRight_, angleAileronRight_, velocity_,
                                   velocityEffective_);
+
   // Forces and Moment are calculated as 3D vectors
   F_wake0_ = aerodynamics_.getCFWake0() * qbar_ * S_wake_ / mass_;
   M_wake0_ = aerodynamics_.getCMWake0().cwiseProduct(aerodynamics_.getBWake()) * qbar_ * S_wake_;
