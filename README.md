@@ -9,3 +9,4 @@ sudo apt-get install ros-kinetic-position-controllers ros-kinetic-joint-state-co
 
 ```
 * [ros_node_utils](https://github.com/MEfeTiryaki/ros_node_utils)
+* [ros_custom_controller](https://github.com/MEfeTiryaki/ros_custom_controller)
