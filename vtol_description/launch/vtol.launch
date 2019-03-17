@@ -49,6 +49,11 @@
                  -x $(arg x)
                  -y $(arg y)
                  -z $(arg z)" />
+
+   <!--
+   <node pkg="tf" type="static_transform_publisher"
+     name="top_camera_base_tf" args="0 0 0 0 0 0 1 odom vtol_0001_base 100" />
+   -->
   </group>
 
 

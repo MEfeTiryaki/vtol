@@ -5,6 +5,7 @@ add_definitions(-std=c++11)
 
 find_package(catkin REQUIRED
   COMPONENTS
+    ros_node_utils
     gazebo_plugins
     gazebo_ros
     roscpp
@@ -27,6 +28,7 @@ include_directories(
 link_directories(
   ${GAZEBO_LIBRARY_DIRS}
 )
+
 catkin_package(
   INCLUDE_DIRS
     include
@@ -35,20 +37,21 @@ catkin_package(
   LIBRARIES
     ${PROJECT_NAME}
   CATKIN_DEPENDS
+    ros_node_utils
     gazebo_plugins
     urdf
     xacro
-    DEPENDS
     roscpp
     gazebo_ros
-    Boost
     tf
+  DEPENDS
+    Boost
 )
 
 
 
 add_library(rotor_gazebo
-  src/RotorGazeboPlugin.cpp
+  src/rotor/RotorGazeboPlugin.cpp
 )
 add_dependencies(rotor_gazebo
   ${catkin_EXPORTED_TARGETS}
@@ -59,7 +62,7 @@ target_link_libraries(rotor_gazebo
 )
 
 add_library(double_rotor_gazebo
-  src/DoubleRotorGazeboPlugin.cpp
+  src/rotor/DoubleRotorGazeboPlugin.cpp
 )
 add_dependencies(double_rotor_gazebo
   ${catkin_EXPORTED_TARGETS}

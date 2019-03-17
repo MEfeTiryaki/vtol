@@ -3,120 +3,117 @@
  Author: Mehmet Efe Tiryaki
  E-mail: m.efetiryaki@gmail.com
  Date created: 30.10.2018
- Date last modified: 30.10.2018
+ Date last modified: 17.03.2019
  */
 
-#include "vtol_gazebo/DoubleRotorGazeboPlugin.hpp"
+#include "vtol_gazebo/rotor/DoubleRotorGazeboPlugin.hpp"
+
+using namespace ros_node_utils;
+
 namespace gazebo {
 
-// Todo :
 DoubleRotorGazeboPlugin::DoubleRotorGazeboPlugin()
-    : nodeHandle_(),
+    : GazeboModelPluginBase(),
       topCommand_(),
-      bottomCommand_()
-{
-}
-
-DoubleRotorGazeboPlugin::~DoubleRotorGazeboPlugin()
-{
-}
-
-void DoubleRotorGazeboPlugin::Init()
-{
-}
-void DoubleRotorGazeboPlugin::Reset()
+      bottomCommand_(),
+      debug_(false),
+      thrust_(0),
+      torque_(0),
+      thrustCoefficient_(0),
+      dragCoefficient_(0),
+      reductionCoefficient_(0),
+      simulationSpeedRatio_(0.01)
 {
 }
 
 void DoubleRotorGazeboPlugin::Load(physics::ModelPtr model, sdf::ElementPtr sdf)
 {
-  ns_ = ros::this_node::getNamespace();
+  GazeboModelPluginBase::Load(model, sdf);
 
-  nodeHandle_ = new ros::NodeHandle("~");
-
-  // Note : check if this is placed correctly
-  this->readParameters(sdf);
-
-  // Model
-  this->model_ = model;
-
-  // initialize joint structure
-  initJointStructures();
-  initLinkStructure();
-  // initialize ROS pub/sub/services
-  initSubscribers();
-  initPublishers();
-
-  // reset simulation variables
-  Reset();
 
   // connect to world updates from Gazebo
   this->updateConnection_ = event::Events::ConnectWorldUpdateBegin(
       boost::bind(&DoubleRotorGazeboPlugin::OnUpdate, this));
 }
 
+
+void DoubleRotorGazeboPlugin::create()
+{
+  GazeboModelPluginBase::create();
+  CONFIRM("[DoubleRotorGazeboPlugin::" + rotorName_ + ": is created");
+}
+
 void DoubleRotorGazeboPlugin::readParameters(sdf::ElementPtr sdf)
 {
+  GazeboModelPluginBase::readParameters(sdf);
   debug_ = sdf->GetElement("debug")->Get<bool>();
 
+  // TODO EFE TIRYAKI 17.03.2019: make this rosparam
   robotName_ = sdf->GetElement("robot_name")->Get<std::string>();
   if (debug_) {
     std::cout << "Robot Name : " << robotName_ << std::endl;
   }
-
+  // TODO EFE TIRYAKI 17.03.2019: make this rosparam
   baseLinkName_ = sdf->GetElement("base_link_name")->Get<std::string>();
   if (debug_) {
     std::cout << "base link name : " << baseLinkName_ << std::endl;
   }
-
+  // TODO EFE TIRYAKI 17.03.2019: make this rosparam
   topLinkName_ = sdf->GetElement("top_link_name")->Get<std::string>();
   if (debug_) {
     std::cout << "top link name : " << topLinkName_ << std::endl;
   }
-
+  // TODO EFE TIRYAKI 17.03.2019: make this rosparam
   bottomLinkName_ = sdf->GetElement("bottom_link_name")->Get<std::string>();
   if (debug_) {
     std::cout << "bottom link name : " << bottomLinkName_ << std::endl;
   }
-
+  // TODO EFE TIRYAKI 17.03.2019: make this rosparam
   rotorName_ = sdf->GetElement("rotor_name")->Get<std::string>();
   if (debug_) {
     std::cout << "rotor name : " << rotorName_ << std::endl;
   }
-
+  // TODO EFE TIRYAKI 17.03.2019: make this rosparam
   topJointName_ = sdf->GetElement("top_joint_name")->Get<std::string>();
   if (debug_) {
     std::cout << "top joint name : " << topJointName_ << std::endl;
   }
-
+  // TODO EFE TIRYAKI 17.03.2019: make this rosparam
   bottomJointName_ = sdf->GetElement("bottom_joint_name")->Get<std::string>();
   if (debug_) {
     std::cout << "bottom joint name : " << bottomJointName_ << std::endl;
   }
-
+  // TODO EFE TIRYAKI 17.03.2019: make this rosparam
   simulationSpeedRatio_ = sdf->GetElement("simulation_speed_ratio")->Get<double>();
   if (debug_) {
     std::cout << "Simulation Speed Ratio : " << simulationSpeedRatio_ << std::endl;
   }
-
+  // TODO EFE TIRYAKI 17.03.2019: make this rosparam
   thrustCoefficient_ = sdf->GetElement("thrust_coefficient")->Get<double>();
   if (debug_) {
     std::cout << "Thrust Coefficient : " << thrustCoefficient_ << std::endl;
   }
-
+  // TODO EFE TIRYAKI 17.03.2019: make this rosparam
   dragCoefficient_ = sdf->GetElement("drag_coefficient")->Get<double>();
   if (debug_) {
     std::cout << "Drag Coefficient : " << dragCoefficient_ << std::endl;
   }
-
+  // TODO EFE TIRYAKI 17.03.2019: make this rosparam
   reductionCoefficient_ = sdf->GetElement("second_blade_reduction")->Get<double>();
   if (debug_) {
     std::cout << "Second Blade Reduction : " << reductionCoefficient_ << std::endl;
   }
 
+  CONFIRM("[DoubleRotorGazeboPlugin::" + rotorName_ + ": read parameters");
 }
 
-void DoubleRotorGazeboPlugin::initJointStructures()
+void DoubleRotorGazeboPlugin::initialize()
+{
+  GazeboModelPluginBase::initialize();
+  CONFIRM("[DoubleRotorGazeboPlugin::" + rotorName_ + ": is initialized");
+}
+
+void DoubleRotorGazeboPlugin::initializeJointStructure()
 {
   topJoint_ = model_->GetJoint(topJointName_);
   if (topJoint_ == NULL) {
@@ -131,9 +128,11 @@ void DoubleRotorGazeboPlugin::initJointStructures()
   } else {
     topJoint_->SetVelocity(0, 0);
   }
+
+  CONFIRM("[DoubleRotorGazeboPlugin::" + rotorName_ + ": initialized Joints");
 }
 
-void DoubleRotorGazeboPlugin::initLinkStructure()
+void DoubleRotorGazeboPlugin::initializeLinkStructure()
 {
   topLink_ = model_->GetLink(topLinkName_);
   if (topLink_ == NULL) {
@@ -156,44 +155,31 @@ void DoubleRotorGazeboPlugin::initLinkStructure()
       * topLink_->GetInitialRelativePose();
   poseBottomLinkToParent_ = parentLink_->GetInitialRelativePose().GetInverse()
       * bottomLink_->GetInitialRelativePose();
+  CONFIRM("[DoubleRotorGazeboPlugin::" + rotorName_ + ": initialized Links");
 }
 
-void DoubleRotorGazeboPlugin::initSubscribers()
+void DoubleRotorGazeboPlugin::initializeSubscribers()
 {
-  topCommandSubscriber_ = nodeHandle_->subscribe(
+  topCommandSubscriber_ = this->nodeHandle_->subscribe(
       "/" + robotName_ + "/" + rotorName_ + "/top/command", 10,
       &DoubleRotorGazeboPlugin::TopCommandsCallback, this);
-  bottomCommandSubscriber_ = nodeHandle_->subscribe(
+  bottomCommandSubscriber_ = this->nodeHandle_->subscribe(
       "/" + robotName_ + "/" + rotorName_ + "/bottom/command", 10,
       &DoubleRotorGazeboPlugin::BottomCommandsCallback, this);
   topCommand_.data = 0;
   bottomCommand_.data = 0;
+
+  CONFIRM("[DoubleRotorGazeboPlugin::" + rotorName_ + ": initialized Subscribers");
 }
 
-void DoubleRotorGazeboPlugin::initPublishers()
+void DoubleRotorGazeboPlugin::initializePublishers()
 {
-  forceVisualizationPublisher_ = nodeHandle_->advertise<visualization_msgs::Marker>(
+  forceVisualizationPublisher_ = this->nodeHandle_->advertise<visualization_msgs::Marker>(
       "/" + robotName_ + "/" + rotorName_ + "/thrust_marker", 0);
-  torqueVisualizationPublisher_ = nodeHandle_->advertise<visualization_msgs::Marker>(
+  torqueVisualizationPublisher_ = this->nodeHandle_->advertise<visualization_msgs::Marker>(
       "/" + robotName_ + "/" + rotorName_ + "/drag_marker", 0);
 
-}
-
-void DoubleRotorGazeboPlugin::OnUpdate()
-{
-  readSimulation();
-  writeSimulation();
-  publishTF();
-  publish();
-}
-
-void DoubleRotorGazeboPlugin::TopCommandsCallback(const std_msgs::Float64& msg)
-{
-  topCommand_ = msg;
-}
-void DoubleRotorGazeboPlugin::BottomCommandsCallback(const std_msgs::Float64& msg)
-{
-  bottomCommand_ = msg;
+  CONFIRM("[DoubleRotorGazeboPlugin::" + rotorName_ + ": initialized Publishers");
 }
 
 void DoubleRotorGazeboPlugin::writeSimulation()
@@ -218,6 +204,7 @@ void DoubleRotorGazeboPlugin::writeSimulation()
   math::Vector3 dragTorqueInParentFrame = poseTopLinkToParent_.rot.RotateVector(
       math::Vector3(0, 0, torque_));
 }
+
 void DoubleRotorGazeboPlugin::readSimulation()
 {
   double topYaw = topJoint_->GetAngle(0).Radian();
@@ -244,7 +231,7 @@ void DoubleRotorGazeboPlugin::readSimulation()
                      orientationRotorToBottomBladeMath.rot.w));
 }
 
-void DoubleRotorGazeboPlugin::publishTF()
+void DoubleRotorGazeboPlugin::publishTf()
 {
   static tf::TransformBroadcaster br;
   br.sendTransform(
@@ -261,7 +248,8 @@ void DoubleRotorGazeboPlugin::publish()
   // TODO Mehmet Efe Tiryaki 14.11.2018 : Correct the virtualization using correct orienation of moment and force
 
   visualization_msgs::Marker marker;
-  if (thrust_ != 0) {
+
+ if (thrust_ != 0) {
     marker.header.stamp = ros::Time();
     marker.header.frame_id = topLinkName_;
     marker.id = 0;
@@ -306,6 +294,16 @@ void DoubleRotorGazeboPlugin::publish()
     marker.color.b = 0.0;
     torqueVisualizationPublisher_.publish(marker);
   }
+}
+
+void DoubleRotorGazeboPlugin::TopCommandsCallback(const std_msgs::Float64& msg)
+{
+  topCommand_ = msg;
+}
+
+void DoubleRotorGazeboPlugin::BottomCommandsCallback(const std_msgs::Float64& msg)
+{
+  bottomCommand_ = msg;
 }
 
 GZ_REGISTER_MODEL_PLUGIN(DoubleRotorGazeboPlugin)

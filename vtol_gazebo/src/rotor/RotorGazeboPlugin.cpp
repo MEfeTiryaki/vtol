@@ -3,10 +3,12 @@ File name: RotorGazeboPlugin.cpp
 Author: Mehmet Efe Tiryaki
 E-mail: m.efetiryaki@gmail.com
 Date created: 29.10.2018
-Date last modified: 30.10.2018
+Date last modified: 17.03.2019
  */
+// TODO : Efe Tiryaki 17.03.2019 : This is old plugin structure
+// imigrate to new GazeboPlugin structure
 
-#include "vtol_gazebo/RotorGazeboPlugin.hpp"
+#include "vtol_gazebo/rotor/RotorGazeboPlugin.hpp"
 namespace gazebo {
 
 // Todo : check if we can add gopigo name here

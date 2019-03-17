@@ -37,7 +37,7 @@
     <arg name="use_sim_time"      value="true"/>
     <arg name="gui"               value="$(arg run_gazebo_gui)"/>
     <arg name="world_name"        value="$(arg world_file)"/>
-    <arg name="verbose"           value="false"/>
+    <arg name="verbose"           value="true"/>
     <arg name="simulation"        value="$(arg simulation)"/>
     <arg name="robot_name"        value="$(arg robot_name)"/>
   </include>

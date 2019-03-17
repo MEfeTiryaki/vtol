@@ -1,9 +1,9 @@
 /*
-File name: DoubleRotorGazeboPlugin.hpp
-Author: Mehmet Efe Tiryaki
-E-mail: m.efetiryaki@gmail.com
-Date created: 30.10.2018
-Date last modified: 30.10.2018
+ File name: DoubleRotorGazeboPlugin.hpp
+ Author: Mehmet Efe Tiryaki
+ E-mail: m.efetiryaki@gmail.com
+ Date created: 30.10.2018
+ Date last modified: 17.03.2019
  */
 
 #pragma once
@@ -44,7 +44,6 @@ Date last modified: 30.10.2018
 #include <sensor_msgs/Imu.h>
 #include <sensor_msgs/JointState.h>
 
-
 #include <visualization_msgs/Marker.h>
 
 // urdf
@@ -53,62 +52,62 @@ Date last modified: 30.10.2018
 // TF
 #include <tf/transform_broadcaster.h>
 // Eigen
-
 #include <Eigen/Dense>
 
+//
+#include "ros_node_base/ros_node_utils.hpp"
+#include "ros_node_base/GazeboModelPluginBase.hpp"
 
 namespace gazebo {
-class DoubleRotorGazeboPlugin : public ModelPlugin
+class DoubleRotorGazeboPlugin : public GazeboModelPluginBase
 {
  public:
   // Constructor.
   DoubleRotorGazeboPlugin();
 
   // Destructor.
-  virtual ~DoubleRotorGazeboPlugin();
+  virtual ~DoubleRotorGazeboPlugin()
+  {
+  }
+  ;
 
-  // Implements Gazebo virtual load function.
-  virtual void Load(physics::ModelPtr model, sdf::ElementPtr /*_sdf*/);
-
-  // Overrides Gazebo init function.
-  virtual void Init();
-
-  // Overrides Gazebo reset function.
-  virtual void Reset();
-
-  virtual void OnUpdate();
-
+  virtual void Load(physics::ModelPtr model, sdf::ElementPtr sdf) override;
  protected:
+
+  virtual void create() override;
+
   // Reads parameters from the parameter server.
   virtual void readParameters(sdf::ElementPtr sdf);
 
-  virtual void initJointStructures() ;
+  virtual void initialize() override;
 
-  virtual void initLinkStructure() ;
+  virtual void initializeJointStructure() override;
+
+  virtual void initializeLinkStructure() override;
 
   // Inits the ROS subscriber.
-  virtual void initSubscribers() ;
+  virtual void initializeSubscribers() override;
+
   // Inits the ROS subscriber.
-  virtual void initPublishers() ;
+  virtual void initializePublishers() override;
 
   // Read simulation state.
-  virtual void readSimulation();
+  virtual void readSimulation() override;
 
   // Writes simulation state.
-  virtual void writeSimulation();
+  virtual void writeSimulation() override;
 
-  virtual void publishTF();
-  virtual void publish();
+  // Publishes Tf for visulaization in RViz
+  virtual void publishTf() override;
+
+  // Publish forces to be visualized in RViz
+  virtual void publish() override;
 
   void TopCommandsCallback(const std_msgs::Float64& msg);
   void BottomCommandsCallback(const std_msgs::Float64& msg);
 
   // Debug Bool
-   bool debug_;
-  // Ros node
-  std::string ns_;
-  ros::NodeHandle* nodeHandle_;
-
+  bool debug_;
   // Ensures gazebo methods are called sequentially
   std::recursive_mutex gazeboMutex_;
 
@@ -133,11 +132,6 @@ class DoubleRotorGazeboPlugin : public ModelPlugin
   std_msgs::Float64 topCommand_;
   std_msgs::Float64 bottomCommand_;
 
-  // Model.
-  physics::ModelPtr model_;
-  // World update event.
-  event::ConnectionPtr updateConnection_;
-
   // Robot links
   physics::LinkPtr topLink_;
   physics::LinkPtr bottomLink_;
@@ -157,14 +151,13 @@ class DoubleRotorGazeboPlugin : public ModelPlugin
   math::Pose poseTopLinkToParent_;
   math::Pose poseBottomLinkToParent_;
 
-  double thrust_ ;
-  double torque_ ;
+  double thrust_;
+  double torque_;
   double thrustCoefficient_;
   double dragCoefficient_;
   double reductionCoefficient_;
   tf::Vector3 thrustVector_;
   tf::Transform rotorNormal_;
-
 
 };
 

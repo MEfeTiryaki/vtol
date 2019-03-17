@@ -16,7 +16,9 @@
   <depend>gazebo_plugins</depend>
   <depend>urdf</depend>
   <depend>xacro</depend>
-  <depend>tf</depend>  
+  <depend>tf</depend>
+  <depend>ros_node_utils</depend>  
+
 
   <export>
     <gazebo_ros plugin_path="${prefix}/lib" gazebo_media_path="${prefix}"/>

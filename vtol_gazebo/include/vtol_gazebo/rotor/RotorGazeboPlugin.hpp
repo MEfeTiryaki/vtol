@@ -3,8 +3,10 @@ File name: RotorGazeboPlugin.hpp
 Author: Mehmet Efe Tiryaki
 E-mail: m.efetiryaki@gmail.com
 Date created: 29.10.2018
-Date last modified: 30.10.2018
+Date last modified: 17.03.2019
  */
+// TODO : Efe Tiryaki 17.03.2019 : This is old plugin structure
+// imigrate to new GazeboPlugin structure
 
 #pragma once
 
