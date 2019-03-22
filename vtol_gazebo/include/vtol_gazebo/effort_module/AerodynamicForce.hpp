@@ -237,6 +237,7 @@ class AerodynamicForce : public EffortModuleBase
 
   virtual Eigen::Vector3d getForce() override
   {
+    calculateAerodynamics();
     Eigen::Vector3d force = Eigen::Vector3d::Zero();
     return  force_;
   }
@@ -434,6 +435,7 @@ class AerodynamicForce : public EffortModuleBase
     M_wake_ = CM_wake.cwiseProduct(B_wake) * qbar_wake_
         * S_wake_;
 
+    std::cout << "F_wake  : " << F_wake_.transpose() << std::endl;
     // Final moments in Body Frame
     Eigen::Vector3d forceOnBodyInBodyFrame = F_free_ + F_wake_;
     Eigen::Vector3d momentOnBodyInBodyFrame = M_free_ + M_wake_;
