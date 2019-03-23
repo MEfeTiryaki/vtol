@@ -477,6 +477,9 @@ class AerodynamicForce : public EffortModuleBase
           ((orientation_ * Eigen::Vector3d(1.0, 0.0, 0.0)).normalized().cross(heading)).norm());
       sideSlipAngle_ = 0.0;
     }
+
+    std::cout << "angleOfAttack_  : " << angleOfAttack_ << std::endl;
+    std::cout << "sideSlipAngle_  : " << sideSlipAngle_ << std::endl;
     /*/ Debug
      std::cout << "velocity :" << velocity.length() << std::endl;
      std::cout << "velocity :" << velocity.getX() << " , " << velocity.getY() << " , "

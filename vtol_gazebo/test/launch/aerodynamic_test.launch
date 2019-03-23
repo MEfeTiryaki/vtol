@@ -4,8 +4,8 @@
 
   <rosparam param="/aerodynamics_test/position">[0,0,0]</rosparam>
   <rosparam param="/aerodynamics_test/orientation">[1,0,0,0]</rosparam>
-  <rosparam param="/aerodynamics_test/linear_velocity">[0,0,0]</rosparam>
-  <rosparam param="/aerodynamics_test/angular_velocity">[0,0,0]</rosparam>
+  <rosparam param="/aerodynamics_test/linear_velocity">[1,0,0]</rosparam>
+  <rosparam param="/aerodynamics_test/angular_velocity">[1,0,0]</rosparam>
 
   <node name="aerodynamic_test_node" pkg="vtol_gazebo" type="test_aero" output="screen"/>
 
