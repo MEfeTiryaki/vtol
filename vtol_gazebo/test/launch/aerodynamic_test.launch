@@ -1,0 +1,9 @@
+<launch>
+  <arg name="simulation_parameter_file"         value="$(find vtol_sim)/config/vtol/parameters_sim.yaml"/>
+<rosparam command="load" ns="vtol_0001" file="$(arg simulation_parameter_file)"/>
+
+
+  <node name="aerodynamic_test_node" pkg="vtol_gazebo" type="test_aero" output="screen"/>
+
+
+</launch>

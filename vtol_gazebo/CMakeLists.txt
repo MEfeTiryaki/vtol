@@ -81,3 +81,14 @@ target_link_libraries(vtol_base_gazebo
   ${catkin_LIBRARIES}
   ${GAZEBO_LIBRARIES}
 )
+
+add_executable(test_aero
+test/aerodynamic_test.cpp
+)
+add_dependencies(test_aero
+  ${catkin_EXPORTED_TARGETS}
+)
+target_link_libraries(test_aero
+  ${catkin_LIBRARIES}
+  ${Boost_LIBRARIES}
+)

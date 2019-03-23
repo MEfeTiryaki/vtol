@@ -15,6 +15,7 @@
 #include <math.h>
 
 #include "ros_node_base/EffortModuleBase.hpp"
+#include "std_msgs/Float64.h"
 
 using namespace ros_node_utils;
 
