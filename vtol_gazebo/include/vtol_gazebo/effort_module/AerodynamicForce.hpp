@@ -238,7 +238,7 @@ class AerodynamicForce : public EffortModuleBase
 
   virtual Eigen::Vector3d getForce() override
   {
-    calculateAerodynamics();
+    
     Eigen::Vector3d force = Eigen::Vector3d::Zero();
     return  force_;
   }
