@@ -1,7 +1,11 @@
 <launch>
   <arg name="simulation_parameter_file"         value="$(find vtol_sim)/config/vtol/parameters_sim.yaml"/>
-<rosparam command="load" ns="vtol_0001" file="$(arg simulation_parameter_file)"/>
+  <rosparam command="load" ns="vtol_0001" file="$(arg simulation_parameter_file)"/>
 
+  <rosparam param="/aerodynamics_test/position">[0,0,0]</rosparam>
+  <rosparam param="/aerodynamics_test/orientation">[1,0,0,0]</rosparam>
+  <rosparam param="/aerodynamics_test/linear_velocity">[0,0,0]</rosparam>
+  <rosparam param="/aerodynamics_test/angular_velocity">[0,0,0]</rosparam>
 
   <node name="aerodynamic_test_node" pkg="vtol_gazebo" type="test_aero" output="screen"/>
 

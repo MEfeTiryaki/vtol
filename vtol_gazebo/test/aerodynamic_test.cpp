@@ -30,11 +30,14 @@ int main(int argc, char **argv)
   aerodynamicsModule->initializeServices();
 
   // ROBOT POSITION AND ORIENTATION IS SET
-  Eigen::Vector3d positionWorldToBase = Eigen::Vector3d(0,0,0);
-  // Q = [w,x,y,z] order
-  Eigen::Quaterniond orientationWorldToBase = Eigen::Quaterniond(1, 0, 0, 0);
-  Eigen::Vector3d linearVelocityOfBaseInBaseFrame = Eigen::Vector3d(0, 0, 0);
-  Eigen::Vector3d angularVelocityOfBaseInBaseFrame = Eigen::Vector3d(0, 0, 0);
+  Eigen::Vector3d positionWorldToBase;
+  Eigen::Quaterniond orientationWorldToBase;  // Q = [w,x,y,z] order
+  Eigen::Vector3d linearVelocityOfBaseInBaseFrame;
+  Eigen::Vector3d angularVelocityOfBaseInBaseFrame;
+  paramRead(nodeHandle_, "/aerodynamics_test/position", positionWorldToBase);
+  paramRead(nodeHandle_, "/aerodynamics_test/orientation", orientationWorldToBase);
+  paramRead(nodeHandle_, "/aerodynamics_test/linear_velocity", linearVelocityOfBaseInBaseFrame);
+  paramRead(nodeHandle_, "/aerodynamics_test/angular_velocity", angularVelocityOfBaseInBaseFrame);
   aerodynamicsModule->setPosition(positionWorldToBase);
   aerodynamicsModule->setOrientation(orientationWorldToBase);
   aerodynamicsModule->setLinearVelocity(linearVelocityOfBaseInBaseFrame);
