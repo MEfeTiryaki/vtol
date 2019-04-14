@@ -9,7 +9,7 @@
 #include <iostream>
 
 #include "vtol_gazebo/effort_module/AerodynamicForce.hpp"
-#include "ros_node_base/ros_node_utils.hpp"
+#include "ros_node_utils/ros_node_utils.hpp"
 
 using namespace ros_node_utils;
 using namespace gazebo;

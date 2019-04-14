@@ -14,7 +14,7 @@
 #include <vector>
 #include <math.h>
 
-#include "ros_node_base/EffortModuleBase.hpp"
+#include "ros_gazebo_utils/EffortModuleBase.hpp"
 #include "std_msgs/Float64.h"
 
 using namespace ros_node_utils;
