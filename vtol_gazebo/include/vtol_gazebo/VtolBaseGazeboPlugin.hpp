@@ -49,7 +49,7 @@
 
 // TF
 #include <tf/transform_broadcaster.h>
-#include <vtol_gazebo/effort_module/AerodynamicForce.hpp>
+#include <vtol_gazebo/wrench_module/AerodynamicForce.hpp>
 // Eigen
 #include <Eigen/Dense>
 
@@ -135,7 +135,7 @@ class VtolBaseGazeboPlugin : public GazeboModelPluginBase
   Eigen::Vector3d torqueOnBodyInWorldFrame_;
 
   // AERODYNAMIC PARAMETERS
-  effort::AerodynamicForce* aerodynamics_;
+  wrench::AerodynamicForce* aerodynamics_;
 
 
 }

@@ -8,12 +8,12 @@
 
 #include <iostream>
 
-#include "vtol_gazebo/effort_module/AerodynamicForce.hpp"
+#include "vtol_gazebo/wrench_module/AerodynamicForce.hpp"
 #include "ros_node_utils/ros_node_utils.hpp"
 
 using namespace ros_node_utils;
 using namespace gazebo;
-using namespace effort;
+using namespace wrench;
 int main(int argc, char **argv)
 {
   std::string nodeName = "aerodynics_test_node";

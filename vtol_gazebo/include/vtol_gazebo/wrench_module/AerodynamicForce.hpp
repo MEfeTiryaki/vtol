@@ -14,7 +14,7 @@
 #include <vector>
 #include <math.h>
 
-#include "ros_gazebo_utils/EffortModuleBase.hpp"
+#include "ros_gazebo_utils/WrenchModuleBase.hpp"
 #include "std_msgs/Float64.h"
 
 using namespace ros_node_utils;
@@ -34,12 +34,12 @@ struct Propeller
   double Torque;
 };
 
-namespace effort {
-class AerodynamicForce : public EffortModuleBase
+namespace wrench {
+class AerodynamicForce : public WrenchModuleBase
 {
  public:
   AerodynamicForce(ros::NodeHandle* nodeHandle)
-      : EffortModuleBase(nodeHandle),
+      : WrenchModuleBase(nodeHandle),
         b(1.619), /* span, m */
         b_wake(0.811),
         S(0.418), /* planform area, m^2 */
@@ -776,5 +776,5 @@ class AerodynamicForce : public EffortModuleBase
   ros::Subscriber elevatorLeftSubscriber_;
 };
 
-}  // namespace effort
+}  // namespace wrench
 }  // namespace gazebo

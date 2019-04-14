@@ -32,7 +32,7 @@ void VtolBaseGazeboPlugin::Load(physics::ModelPtr model, sdf::ElementPtr sdf)
 void VtolBaseGazeboPlugin::create()
 {
   GazeboModelPluginBase::create();
-  aerodynamics_ = new effort::AerodynamicForce(this->nodeHandle_);
+  aerodynamics_ = new wrench::AerodynamicForce(this->nodeHandle_);
 
   CONFIRM("[VtolBaseGazeboPlugin] : is created");
 }
