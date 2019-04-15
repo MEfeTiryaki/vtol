@@ -59,11 +59,7 @@ void VtolBaseGazeboPlugin::readParameters(sdf::ElementPtr sdf)
     std::cout << "Robot Name : " << robotName_ << std::endl;
   }
 
-  // TODO EFE TIRYAKI 17.03.2019: make this rosparam
-  linkName_ = sdf->GetElement("link_name")->Get<std::string>();
-  if (debug_) {
-    std::cout << "link name : " << linkName_ << std::endl;
-  }
+
 
   // READ PARAMETERS
 
@@ -79,11 +75,12 @@ void VtolBaseGazeboPlugin::readParameters(sdf::ElementPtr sdf)
 
 void VtolBaseGazeboPlugin::initialize()
 {
+
   GazeboModelPluginBase::initialize();
   aerodynamics_->initialize();
 
   visualizer_->addWrench(aerodynamics_, baseLink_->GetName(), Eigen::Vector4d(1, 0, 0, 1),
-                         Eigen::Vector4d(1, 0, 0, 1));
+                          Eigen::Vector4d(1, 0, 0, 1));
 
   CONFIRM("[VtolBaseGazeboPlugin] : is initialized");
 }
@@ -92,9 +89,16 @@ void VtolBaseGazeboPlugin::initializeLinkStructure()
 {
   GazeboModelPluginBase::initializeLinkStructure();
   std::lock_guard<std::mutex> lock(this->mutex_);
-  baseLink_ = model_->GetLink(linkName_);
-  if (baseLink_ == NULL) {
-    std::cout << " Couldn't find the link : " << linkName_ << std::endl;
+  physics::Link_V links = model_->GetLinks();
+
+  for (int i = 0; i < links.size(); i++) {
+    if (links[i]->GetName().find("base_link") != std::string::npos) {
+      baseLink_ = links[i];
+      CONFIRM("[VtolBaseGazeboPlugin] : Model contain base_link!");
+      return;
+    }else{
+      ERROR("[VtolBaseGazeboPlugin] : Model does not contain base_link!");
+    }
   }
   CONFIRM("[VtolBaseGazeboPlugin] : initialized Links");
 }
@@ -104,9 +108,7 @@ void VtolBaseGazeboPlugin::initializeSubscribers()
   GazeboModelPluginBase::initializeSubscribers();
   aerodynamics_->initializeSubscribers();
 
-  markerPublisher_ = nodeHandle_->advertise<visualization_msgs::MarkerArray>("visualization_marker",
-                                                                              1);
-  
+
   CONFIRM("[VtolBaseGazeboPlugin] : initialized Subscribers");
 }
 
@@ -114,6 +116,9 @@ void VtolBaseGazeboPlugin::initializePublishers()
 {
   GazeboModelPluginBase::initializePublishers();
   aerodynamics_->initializePublishers();
+  markerPublisher_ = nodeHandle_->advertise<visualization_msgs::MarkerArray>("visualization_marker",
+                                                                              1);
+
   CONFIRM("[VtolBaseGazeboPlugin] : initialized Publishers");
 }
 

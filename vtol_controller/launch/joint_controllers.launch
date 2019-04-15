@@ -2,10 +2,11 @@
 <launch>
   <!-- launch file parameters -->
   <arg name="robot_namespace" default="vtol_0000" />
-  <arg name="debug"     default="false" />
+  <arg name="debug"     default="true" />
 
   <include file="$(find vtol_controller)/launch/ros_controllers.launch">
     <arg name="robot_namespace" value="$(arg robot_namespace)"/>
-    <arg name="controllers" value="joint_state_controller TR TL  ER EL AR AL"/>
+    <arg name="debug" value="$(arg debug)"/>
+    <arg name="controllers" value="joint_state_controller TR TL ER EL AR AL"/>
   </include>
 </launch>

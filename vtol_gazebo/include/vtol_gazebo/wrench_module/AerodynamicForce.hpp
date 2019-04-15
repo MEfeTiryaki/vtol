@@ -190,7 +190,7 @@ class AerodynamicForce : public WrenchModuleBase
     paramRead(this->nodeHandle_,this->namespace_ + "/vtol_0001/aerodynamics/cd_alpha_elv",cd_alpha_elv_,7);
     paramRead(this->nodeHandle_,this->namespace_ + "/vtol_0001/aerodynamics/cn_ail",cn_ail_,9);
 
-    //*
+    /*
     std::cout << "ail_\n" << ail_.transpose() << std::endl;
     std::cout << "alpha_wake_\n" << alpha_wake_.transpose() << std::endl;
     std::cout << "alpha_\n" << alpha_.transpose() << std::endl;

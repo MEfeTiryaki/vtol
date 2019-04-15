@@ -20,16 +20,18 @@ int main(int argc, char **argv)
   ros::init(argc, argv, nodeName);
   ros::NodeHandle* nodeHandle_ = new ros::NodeHandle("~");
 
-  wrench::WrenchLink* wrenchLink_;
+  wrench::WrenchLink* wrenchLink_ = new wrench::WrenchLink();
 
   CONFIRM("Aerodynamics test code started.");
   AerodynamicForce* aerodynamicsModule = new AerodynamicForce(nodeHandle_,wrenchLink_);
 
+  aerodynamicsModule->create();
   aerodynamicsModule->readParameters();
   aerodynamicsModule->initialize();
   aerodynamicsModule->initializeSubscribers();
   aerodynamicsModule->initializePublishers();
   aerodynamicsModule->initializeServices();
+  CONFIRM("Aerodynamic module is initialized.");
 
   // ROBOT POSITION AND ORIENTATION IS SET
   Eigen::Vector3d positionWorldToBase;
@@ -44,6 +46,7 @@ int main(int argc, char **argv)
   wrenchLink_->setOrientationWorldtoBase(orientationWorldToBase);
   wrenchLink_->setLinearVelocityOfBaseInBaseFrame(linearVelocityOfBaseInBaseFrame);
   wrenchLink_->setAngularVelocityOfBaseInBaseFrame(angularVelocityOfBaseInBaseFrame);
+  CONFIRM("Robot pose has been read.");
 
   // CALCULATE AEROYNAMICS
   aerodynamicsModule->advance();

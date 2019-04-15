@@ -31,45 +31,45 @@
   <xacro:include filename="$(find vtol_description)/urdf/aileron/${aileron_type}/aileron.urdf.xacro"/>
 
   <!-- Base -->
-  <xacro:vtol_base robot_name="${robot_name}" name="base">
+  <xacro:vtol_base robot_name="${robot_name}" name="base_link">
     <properties>
       <xacro:include filename="$(find vtol_description)/urdf/base/${base_version}/vtol_base_parameters.urdf.xacro"/>
     </properties>
   </xacro:vtol_base>
 
-  <xacro:front_rotor robot_name="${robot_name}" base_name="${robot_name}_base" side="right">
+  <xacro:front_rotor robot_name="${robot_name}" base_name="${robot_name}_base_link" side="right">
     <properties>
       <xacro:include filename="$(find vtol_description)/urdf/rotor/${rotor_type}/front_rotor_parameters.urdf.xacro"/>
     </properties>
   </xacro:front_rotor>
-  <xacro:front_rotor robot_name="${robot_name}" base_name="${robot_name}_base" side="left">
+  <xacro:front_rotor robot_name="${robot_name}" base_name="${robot_name}_base_link" side="left">
     <properties>
       <xacro:include filename="$(find vtol_description)/urdf/rotor/${rotor_type}/front_rotor_parameters.urdf.xacro"/>
     </properties>
   </xacro:front_rotor>
-  <xacro:hind_rotor robot_name="${robot_name}" base_name="${robot_name}_base" >
+  <xacro:hind_rotor robot_name="${robot_name}" base_name="${robot_name}_base_link" >
     <properties>
       <xacro:include filename="$(find vtol_description)/urdf/rotor/${rotor_type}/hind_rotor_parameters.urdf.xacro"/>
     </properties>
   </xacro:hind_rotor>
 
-  <xacro:elevator robot_name="${robot_name}" base_name="${robot_name}_base" side="right">
+  <xacro:elevator robot_name="${robot_name}" base_name="${robot_name}_base_link" side="right">
     <properties>
       <xacro:include filename="$(find vtol_description)/urdf/elevator/${elevator_type}/elevator_parameters.urdf.xacro"/>
     </properties>
   </xacro:elevator>
-  <xacro:elevator robot_name="${robot_name}" base_name="${robot_name}_base" side="left">
+  <xacro:elevator robot_name="${robot_name}" base_name="${robot_name}_base_link" side="left">
     <properties>
       <xacro:include filename="$(find vtol_description)/urdf/elevator/${elevator_type}/elevator_parameters.urdf.xacro"/>
     </properties>
   </xacro:elevator>
 
-  <xacro:aileron robot_name="${robot_name}" base_name="${robot_name}_base" side="right">
+  <xacro:aileron robot_name="${robot_name}" base_name="${robot_name}_base_link" side="right">
     <properties>
       <xacro:include filename="$(find vtol_description)/urdf/aileron/${aileron_type}/aileron_parameters.urdf.xacro"/>
     </properties>
   </xacro:aileron>
-  <xacro:aileron robot_name="${robot_name}" base_name="${robot_name}_base" side="left">
+  <xacro:aileron robot_name="${robot_name}" base_name="${robot_name}_base_link" side="left">
     <properties>
       <xacro:include filename="$(find vtol_description)/urdf/aileron/${aileron_type}/aileron_parameters.urdf.xacro"/>
     </properties>
