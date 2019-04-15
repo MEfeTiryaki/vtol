@@ -29,11 +29,20 @@ void VtolBaseGazeboPlugin::Load(physics::ModelPtr model, sdf::ElementPtr sdf)
       boost::bind(&VtolBaseGazeboPlugin::OnUpdate, this));
 }
 
+void VtolBaseGazeboPlugin::OnUpdate()
+{
+  VtolBaseGazeboPlugin::OnUpdate();
+  publishMarker();
+}
+
 void VtolBaseGazeboPlugin::create()
 {
   GazeboModelPluginBase::create();
-  aerodynamics_ = new wrench::AerodynamicForce(this->nodeHandle_);
+  wrenchLink_ = new wrench::WrenchLink();
 
+  aerodynamics_ = new wrench::AerodynamicForce(this->nodeHandle_,wrenchLink_);
+
+  visualizer_ = new wrench::WrenchVisualizer(this->nodeHandle_);
   CONFIRM("[VtolBaseGazeboPlugin] : is created");
 }
 
@@ -72,6 +81,10 @@ void VtolBaseGazeboPlugin::initialize()
 {
   GazeboModelPluginBase::initialize();
   aerodynamics_->initialize();
+
+  visualizer_->addWrench(aerodynamics_, baseLink_->GetName(), Eigen::Vector4d(1, 0, 0, 1),
+                         Eigen::Vector4d(1, 0, 0, 1));
+
   CONFIRM("[VtolBaseGazeboPlugin] : is initialized");
 }
 
@@ -79,8 +92,8 @@ void VtolBaseGazeboPlugin::initializeLinkStructure()
 {
   GazeboModelPluginBase::initializeLinkStructure();
   std::lock_guard<std::mutex> lock(this->mutex_);
-  link_ = model_->GetLink(linkName_);
-  if (link_ == NULL) {
+  baseLink_ = model_->GetLink(linkName_);
+  if (baseLink_ == NULL) {
     std::cout << " Couldn't find the link : " << linkName_ << std::endl;
   }
   CONFIRM("[VtolBaseGazeboPlugin] : initialized Links");
@@ -90,6 +103,10 @@ void VtolBaseGazeboPlugin::initializeSubscribers()
 {
   GazeboModelPluginBase::initializeSubscribers();
   aerodynamics_->initializeSubscribers();
+
+  markerPublisher_ = nodeHandle_->advertise<visualization_msgs::MarkerArray>("visualization_marker",
+                                                                              1);
+  
   CONFIRM("[VtolBaseGazeboPlugin] : initialized Subscribers");
 }
 
@@ -100,23 +117,21 @@ void VtolBaseGazeboPlugin::initializePublishers()
   CONFIRM("[VtolBaseGazeboPlugin] : initialized Publishers");
 }
 
+
 // SIMULATION METHODS
 void VtolBaseGazeboPlugin::writeSimulation()
 {
   std::lock_guard<std::mutex> lock(this->mutex_);
   // Calculate Force and Moments
-  aerodynamics_->setPosition(positionWorldToBase_);
-  aerodynamics_->setOrientation(orientationWorldToBase_);
-  aerodynamics_->setLinearVelocity(linearVelocityOfBaseInBaseFrame_);
-  aerodynamics_->setAngularVelocity(angularVelocityOfBaseInBaseFrame_);
+  aerodynamics_->advance();
   Eigen::Vector3d origin = aerodynamics_->getOrigin();
-  Eigen::Vector3d forceInWorldFrame = aerodynamics_->getForce();
-  Eigen::Vector3d torqueInWorldFrame = aerodynamics_->getTorque();
+  Eigen::Vector3d forceInWorldFrame = aerodynamics_->getForceInWorldFrame();
+  Eigen::Vector3d torqueInWorldFrame = aerodynamics_->getTorqueInWorldFrame();
 
-  link_->AddForceAtRelativePosition(
+  baseLink_->AddForceAtRelativePosition(
       math::Vector3(forceInWorldFrame[0], forceInWorldFrame[1], forceInWorldFrame[2]),
       math::Vector3(origin[0], origin[1], origin[2]));
-  link_->AddRelativeTorque(
+  baseLink_->AddRelativeTorque(
       math::Vector3(torqueInWorldFrame[0], torqueInWorldFrame[1], torqueInWorldFrame[2]));
 
 }
@@ -124,17 +139,24 @@ void VtolBaseGazeboPlugin::writeSimulation()
 void VtolBaseGazeboPlugin::readSimulation()
 {
   std::lock_guard<std::mutex> lock(this->mutex_);
-  positionWorldToBase_ = Eigen::Vector3d(link_->GetWorldPose().pos.x, link_->GetWorldPose().pos.y,
-                                         link_->GetWorldPose().pos.z);
-  orientationWorldToBase_ = Eigen::Quaterniond(link_->GetWorldPose().rot.w,
-                                               link_->GetWorldPose().rot.x,
-                                               link_->GetWorldPose().rot.y,
-                                               link_->GetWorldPose().rot.z);
+  auto basePose = baseLink_->GetWorldPose();
+  math::Vector3 linearVel = baseLink_->GetRelativeLinearVel();
+  math::Vector3 angularVel = baseLink_->GetRelativeAngularVel();
+  auto gravity = baseLink_->GetWorld()->GetPhysicsEngine()->GetGravity();
+  positionWorldToBase_ = Eigen::Vector3d(basePose.pos.x, basePose.pos.y, basePose.pos.z);
+  orientationWorldToBase_ = Eigen::Quaterniond(basePose.rot.w, basePose.rot.x, basePose.rot.y,
+                                               basePose.rot.z);
+  linearVelocityOfBaseInBaseFrame_ = Eigen::Vector3d(linearVel.x, linearVel.y, linearVel.z);
+  angularVelocityOfBaseInBaseFrame_ = Eigen::Vector3d(angularVel.x, angularVel.y, angularVel.z);
 
-  angularVelocityOfBaseInBaseFrame_ << link_->GetWorldAngularVel().x, link_->GetWorldAngularVel().y, link_
-      ->GetWorldAngularVel().z;
-  linearVelocityOfBaseInBaseFrame_ << link_->GetWorldLinearVel().x, link_->GetWorldLinearVel().y, link_
-      ->GetWorldLinearVel().z;
+
+      // Update Wrench
+   wrenchLink_->setPositionWorldtoBase(positionWorldToBase_);
+   wrenchLink_->setOrientationWorldtoBase(orientationWorldToBase_);
+   wrenchLink_->setLinearVelocityOfBaseInBaseFrame(linearVelocityOfBaseInBaseFrame_);
+   wrenchLink_->setAngularVelocityOfBaseInBaseFrame(angularVelocityOfBaseInBaseFrame_);
+   wrenchLink_->setMass(baseLink_->GetInertial()->GetMass());
+   wrenchLink_->setGravity(Eigen::Vector3d(gravity[0], gravity[1], gravity[2]));
 
 }
 
@@ -158,6 +180,17 @@ void VtolBaseGazeboPlugin::publish()
   // RViz
 
 }
+
+void VtolBaseGazeboPlugin::publishMarker()
+{
+  visualization_msgs::MarkerArray markerArray;
+
+    visualizer_->calculateMarkers(markerArray);
+
+    markerPublisher_.publish(markerArray);
+
+}
+
 
 // AERODYNAMICS
 

@@ -20,8 +20,10 @@ int main(int argc, char **argv)
   ros::init(argc, argv, nodeName);
   ros::NodeHandle* nodeHandle_ = new ros::NodeHandle("~");
 
+  wrench::WrenchLink* wrenchLink_;
+
   CONFIRM("Aerodynamics test code started.");
-  AerodynamicForce* aerodynamicsModule = new AerodynamicForce(nodeHandle_);
+  AerodynamicForce* aerodynamicsModule = new AerodynamicForce(nodeHandle_,wrenchLink_);
 
   aerodynamicsModule->readParameters();
   aerodynamicsModule->initialize();
@@ -38,16 +40,16 @@ int main(int argc, char **argv)
   paramRead(nodeHandle_, "/aerodynamics_test/orientation", orientationWorldToBase);
   paramRead(nodeHandle_, "/aerodynamics_test/linear_velocity", linearVelocityOfBaseInBaseFrame);
   paramRead(nodeHandle_, "/aerodynamics_test/angular_velocity", angularVelocityOfBaseInBaseFrame);
-  aerodynamicsModule->setPosition(positionWorldToBase);
-  aerodynamicsModule->setOrientation(orientationWorldToBase);
-  aerodynamicsModule->setLinearVelocity(linearVelocityOfBaseInBaseFrame);
-  aerodynamicsModule->setAngularVelocity(angularVelocityOfBaseInBaseFrame);
+  wrenchLink_->setPositionWorldtoBase(positionWorldToBase);
+  wrenchLink_->setOrientationWorldtoBase(orientationWorldToBase);
+  wrenchLink_->setLinearVelocityOfBaseInBaseFrame(linearVelocityOfBaseInBaseFrame);
+  wrenchLink_->setAngularVelocityOfBaseInBaseFrame(angularVelocityOfBaseInBaseFrame);
 
   // CALCULATE AEROYNAMICS
-  aerodynamicsModule->calculateAerodynamics();
+  aerodynamicsModule->advance();
   Eigen::Vector3d origin = aerodynamicsModule->getOrigin();
-  Eigen::Vector3d forceInWorldFrame = aerodynamicsModule->getForce();
-  Eigen::Vector3d torqueInWorldFrame = aerodynamicsModule->getTorque();
+  Eigen::Vector3d forceInWorldFrame = aerodynamicsModule->getForceInWorldFrame();
+  Eigen::Vector3d torqueInWorldFrame = aerodynamicsModule->getTorqueInWorldFrame();
 
   return 0;
 }
