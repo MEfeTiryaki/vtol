@@ -38,6 +38,8 @@
 // std msgs
 #include <std_msgs/Int8.h>
 #include <std_msgs/Float64.h>
+// Rviz markers
+#include <visualization_msgs/MarkerArray.h>
 
 // sensor msgs
 #include <sensor_msgs/JointState.h>
@@ -49,14 +51,15 @@
 
 // TF
 #include <tf/transform_broadcaster.h>
-#include <vtol_gazebo/effort_module/AerodynamicForce.hpp>
+#include <vtol_gazebo/wrench_module/AerodynamicForce.hpp>
 // Eigen
 #include <Eigen/Dense>
 
-#include "ros_node_base/ros_node_utils.hpp"
+#include "ros_node_utils/ros_node_utils.hpp"
 
-#include "ros_node_base/GazeboModelPluginBase.hpp"
-
+#include "ros_gazebo_utils/GazeboModelPluginBase.hpp"
+#include "ros_gazebo_utils/WrenchVisualizer.hpp"
+#include "ros_gazebo_utils/WrenchLink.hpp"
 namespace gazebo {
 
 class VtolBaseGazeboPlugin : public GazeboModelPluginBase
@@ -77,6 +80,7 @@ class VtolBaseGazeboPlugin : public GazeboModelPluginBase
 
   virtual void Load(physics::ModelPtr model, sdf::ElementPtr sdf) override;
 
+  virtual void OnUpdate() override;
  protected:
 
   virtual void create() override;
@@ -106,6 +110,11 @@ class VtolBaseGazeboPlugin : public GazeboModelPluginBase
   // Publish forces to be visualized in RViz
   virtual void publish() override;
 
+  /*! \~english
+   *  Publishes visulization markers
+   */
+  virtual void publishMarker();
+
 
   // Debug Bool
   bool debug_;
@@ -117,17 +126,9 @@ class VtolBaseGazeboPlugin : public GazeboModelPluginBase
   std::string robotName_;
   std::string linkName_;
 
-  // Robot links
-  physics::LinkPtr link_;
-
   // Simulation values
-  Eigen::Vector3d positionWorldToBase_;
-  Eigen::Quaterniond orientationWorldToBase_;
-  Eigen::Vector3d linearVelocityOfBaseInBaseFrame_;
-  Eigen::Vector3d angularVelocityOfBaseInBaseFrame_;
   Eigen::Vector3d eulerAngles_;
   tf::Transform T_WB_;
-
 
 
 
@@ -135,8 +136,11 @@ class VtolBaseGazeboPlugin : public GazeboModelPluginBase
   Eigen::Vector3d torqueOnBodyInWorldFrame_;
 
   // AERODYNAMIC PARAMETERS
-  effort::AerodynamicForce* aerodynamics_;
+  wrench::AerodynamicForce* aerodynamics_;
 
+  wrench::WrenchVisualizer* visualizer_;
+
+  wrench::WrenchLink* wrenchLink_;
 
 }
 ;

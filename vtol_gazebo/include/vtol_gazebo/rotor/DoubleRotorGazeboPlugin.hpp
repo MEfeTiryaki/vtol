@@ -55,8 +55,8 @@
 #include <Eigen/Dense>
 
 //
-#include "ros_node_base/ros_node_utils.hpp"
-#include "ros_node_base/GazeboModelPluginBase.hpp"
+#include "ros_node_utils/ros_node_utils.hpp"
+#include "ros_gazebo_utils/GazeboModelPluginBase.hpp"
 
 namespace gazebo {
 class DoubleRotorGazeboPlugin : public GazeboModelPluginBase

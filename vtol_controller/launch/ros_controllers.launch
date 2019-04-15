@@ -11,6 +11,6 @@
   <rosparam file="$(find vtol_controller)/config/hardware_controllers.yaml" command="load" />
 
    <!-- load controllers -->
-   <node name="robot_controllers" pkg="controller_manager" type="spawner" output="$(arg OUTPUT)" args="$(arg controllers)"/>
+   <node name="robot_controllers" pkg="controller_manager" type="spawner" output="screen" args="$(arg controllers)"/>
 
 </launch>

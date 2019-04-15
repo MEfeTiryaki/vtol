@@ -14,7 +14,7 @@
 #include <vector>
 #include <math.h>
 
-#include "ros_node_base/EffortModuleBase.hpp"
+#include "ros_gazebo_utils/wrench_modules/WrenchModuleBase.hpp"
 #include "std_msgs/Float64.h"
 
 using namespace ros_node_utils;
@@ -34,12 +34,12 @@ struct Propeller
   double Torque;
 };
 
-namespace effort {
-class AerodynamicForce : public EffortModuleBase
+namespace wrench {
+class AerodynamicForce : public WrenchModuleBase
 {
  public:
-  AerodynamicForce(ros::NodeHandle* nodeHandle)
-      : EffortModuleBase(nodeHandle),
+  AerodynamicForce(ros::NodeHandle* nodeHandle, wrench::WrenchLink* link)
+      : WrenchModuleBase(nodeHandle, link),
         b(1.619), /* span, m */
         b_wake(0.811),
         S(0.418), /* planform area, m^2 */
@@ -152,7 +152,6 @@ class AerodynamicForce : public EffortModuleBase
         angleOfAttackDot_(0.0),
         angleOfAttackEffective_(0.0),
         sideSlipAngle_(0.0)
-
   {
   }
   ;
@@ -191,7 +190,7 @@ class AerodynamicForce : public EffortModuleBase
     paramRead(this->nodeHandle_,this->namespace_ + "/vtol_0001/aerodynamics/cd_alpha_elv",cd_alpha_elv_,7);
     paramRead(this->nodeHandle_,this->namespace_ + "/vtol_0001/aerodynamics/cn_ail",cn_ail_,9);
 
-    //*
+    /*
     std::cout << "ail_\n" << ail_.transpose() << std::endl;
     std::cout << "alpha_wake_\n" << alpha_wake_.transpose() << std::endl;
     std::cout << "alpha_\n" << alpha_.transpose() << std::endl;
@@ -236,15 +235,15 @@ class AerodynamicForce : public EffortModuleBase
     CONFIRM("[AerodynamicForce] : initialized Subscribers");
   }
 
-  virtual Eigen::Vector3d getForce() override
+  virtual Eigen::Vector3d getForceInWorldFrame() override
   {
-    
+
     Eigen::Vector3d force = Eigen::Vector3d::Zero();
     return  force_;
   }
   ;
 
-  virtual Eigen::Vector3d getTorque() override
+  virtual Eigen::Vector3d getTorqueInWorldFrame() override
   {
     Eigen::Vector3d torque = Eigen::Vector3d::Zero();
     return torque_;
@@ -373,6 +372,11 @@ class AerodynamicForce : public EffortModuleBase
         + CM_ad_wake * alphadot * M_PI / 180 * cbar_wake / 2 / Vts, CN_beta_wake * beta * M_PI / 180
         + CN_p_wake * P * b_wake / 2 / Vts + CN_r_wake * R * b_wake / 2 / Vts;
 
+  }
+  ;
+
+  virtual void advance() override{
+      calculateAerodynamics();
   }
   ;
 
@@ -776,5 +780,5 @@ class AerodynamicForce : public EffortModuleBase
   ros::Subscriber elevatorLeftSubscriber_;
 };
 
-}  // namespace effort
+}  // namespace wrench
 }  // namespace gazebo

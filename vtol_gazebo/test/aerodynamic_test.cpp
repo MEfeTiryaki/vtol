@@ -8,26 +8,30 @@
 
 #include <iostream>
 
-#include "vtol_gazebo/effort_module/AerodynamicForce.hpp"
-#include "ros_node_base/ros_node_utils.hpp"
+#include "vtol_gazebo/wrench_module/AerodynamicForce.hpp"
+#include "ros_node_utils/ros_node_utils.hpp"
 
 using namespace ros_node_utils;
 using namespace gazebo;
-using namespace effort;
+using namespace wrench;
 int main(int argc, char **argv)
 {
   std::string nodeName = "aerodynics_test_node";
   ros::init(argc, argv, nodeName);
   ros::NodeHandle* nodeHandle_ = new ros::NodeHandle("~");
 
-  CONFIRM("Aerodynamics test code started.");
-  AerodynamicForce* aerodynamicsModule = new AerodynamicForce(nodeHandle_);
+  wrench::WrenchLink* wrenchLink_ = new wrench::WrenchLink();
 
+  CONFIRM("Aerodynamics test code started.");
+  AerodynamicForce* aerodynamicsModule = new AerodynamicForce(nodeHandle_,wrenchLink_);
+
+  aerodynamicsModule->create();
   aerodynamicsModule->readParameters();
   aerodynamicsModule->initialize();
   aerodynamicsModule->initializeSubscribers();
   aerodynamicsModule->initializePublishers();
   aerodynamicsModule->initializeServices();
+  CONFIRM("Aerodynamic module is initialized.");
 
   // ROBOT POSITION AND ORIENTATION IS SET
   Eigen::Vector3d positionWorldToBase;
@@ -38,16 +42,17 @@ int main(int argc, char **argv)
   paramRead(nodeHandle_, "/aerodynamics_test/orientation", orientationWorldToBase);
   paramRead(nodeHandle_, "/aerodynamics_test/linear_velocity", linearVelocityOfBaseInBaseFrame);
   paramRead(nodeHandle_, "/aerodynamics_test/angular_velocity", angularVelocityOfBaseInBaseFrame);
-  aerodynamicsModule->setPosition(positionWorldToBase);
-  aerodynamicsModule->setOrientation(orientationWorldToBase);
-  aerodynamicsModule->setLinearVelocity(linearVelocityOfBaseInBaseFrame);
-  aerodynamicsModule->setAngularVelocity(angularVelocityOfBaseInBaseFrame);
+  wrenchLink_->setPositionWorldtoBase(positionWorldToBase);
+  wrenchLink_->setOrientationWorldtoBase(orientationWorldToBase);
+  wrenchLink_->setLinearVelocityOfBaseInBaseFrame(linearVelocityOfBaseInBaseFrame);
+  wrenchLink_->setAngularVelocityOfBaseInBaseFrame(angularVelocityOfBaseInBaseFrame);
+  CONFIRM("Robot pose has been read.");
 
   // CALCULATE AEROYNAMICS
-  aerodynamicsModule->calculateAerodynamics();
+  aerodynamicsModule->advance();
   Eigen::Vector3d origin = aerodynamicsModule->getOrigin();
-  Eigen::Vector3d forceInWorldFrame = aerodynamicsModule->getForce();
-  Eigen::Vector3d torqueInWorldFrame = aerodynamicsModule->getTorque();
+  Eigen::Vector3d forceInWorldFrame = aerodynamicsModule->getForceInWorldFrame();
+  Eigen::Vector3d torqueInWorldFrame = aerodynamicsModule->getTorqueInWorldFrame();
 
   return 0;
 }
