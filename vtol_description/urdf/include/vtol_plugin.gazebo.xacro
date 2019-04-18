@@ -3,14 +3,14 @@
       Author: Mehmet Efe Tiryaki
       E-mail: m.efetiryaki@gmail.com
       Date created: 26.10.2018
-      Date last modified: 26.10.2018
+      Date last modified: 18.04.2019
 -->
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
 
 
+
     <gazebo>
       <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
-         <legacyModeNS>true</legacyModeNS>
       </plugin>
     </gazebo>
 </robot>

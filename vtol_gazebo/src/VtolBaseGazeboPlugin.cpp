@@ -3,7 +3,7 @@
  Author: Mehmet Efe Tiryaki
  E-mail: m.efetiryaki@gmail.com
  Date created: 28.10.2018
- Date last modified: 17.03.2019
+ Date last modified: 18.04.2019
  */
 
 #include "vtol_gazebo/VtolBaseGazeboPlugin.hpp"
@@ -31,7 +31,7 @@ void VtolBaseGazeboPlugin::Load(physics::ModelPtr model, sdf::ElementPtr sdf)
 
 void VtolBaseGazeboPlugin::OnUpdate()
 {
-  VtolBaseGazeboPlugin::OnUpdate();
+  GazeboModelPluginBase::OnUpdate();
   publishMarker();
 }
 
@@ -175,7 +175,7 @@ void VtolBaseGazeboPlugin::publishTf()
   tf::Quaternion q = tf::Quaternion(orientationWorldToBase_.x(), orientationWorldToBase_.y(),
                                     orientationWorldToBase_.z(), orientationWorldToBase_.w());
   T_WB_.setRotation(q);
-  br.sendTransform(tf::StampedTransform(T_WB_, ros::Time::now(), "odom", linkName_));
+  br.sendTransform(tf::StampedTransform(T_WB_, ros::Time::now(), "odom", baseLink_->GetName()));
 
 }
 
